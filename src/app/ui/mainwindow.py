@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
     QDockWidget,
     QWidget,
     QToolBar,
+    QListWidget,
 )
 from PyQt5.QtGui import QKeySequence
 from app.utils.action import *
@@ -16,6 +17,7 @@ from app.script.scripteditor import ScriptEditor
 from app.scene.sceneeditor import SceneEditor
 from .statusbar import StatusBar
 from .mdicontainer import MdiContainer
+from .filebrowser import FileBrowser
 
 
 class MainWindow(QMainWindow):
@@ -38,7 +40,17 @@ class MainWindow(QMainWindow):
         self._createMenus()
         StatusBar().bar.showMessage("Ready", 4000)
 
-        # self._editScript()
+        self._list = QListWidget()
+        self._list.addItem("item 1")
+        self._list.addItem("item 2")
+        self._list.addItem("item 3")
+        self._list.addItem("item 4")
+        self._dock = QDockWidget("Dockable", self)
+        self._dock.setWidget(self._list)
+        self.addDockWidget(Qt.RightDockWidgetArea, self._dock)
+
+        self._filebrowser = FileBrowser(self)
+        self.addDockWidget(Qt.LeftDockWidgetArea, self._filebrowser)
 
     #! TO DISABLE menu entries use action.setEnable(False)
     def _createMenus(self):
@@ -125,7 +137,7 @@ class MainWindow(QMainWindow):
     def _save(self):
         # grab the active document before opening the save file dialog
         document = self._mdiArea.activeSubWindow().widget()
-        if not isinstance(document, SceneEditor):
+        if not isinstance(document, (SceneEditor, ScriptEditor)):
             return
 
         path, file = FileIOControl().saveFile("Scene Files (*.txt)")

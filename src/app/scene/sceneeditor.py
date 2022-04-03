@@ -35,8 +35,8 @@ class SceneEditor(QMainWindow):
         self._hotspot.triggered.connect(lambda: self._scene.setTool("DrawBoxTool"))
         self._hotspot.setCheckable(True)
 
-        self._resize = QAction("Resize object", self)
-        self._resize.setToolTip("Resize an object")
+        self._resize = QAction("Edit object", self)
+        self._resize.setToolTip("Edit an object")
         self._resize.setCheckable(True)
 
         self._select = QAction("Select object", self)
@@ -90,3 +90,6 @@ class SceneEditor(QMainWindow):
                             scene=self._scene,
                         )
                     )
+
+            """ set items not interactable by default"""
+            self._scene.setItemsInteractivity(False)

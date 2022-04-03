@@ -4,15 +4,18 @@ from .abstracttool import AbstractTool
 
 
 class SelectTool(AbstractTool):
+    """This tool acts as a proxy for the native
+    QGraphicsScene item selection handling
+    """
+
     def __init__(self, scene: QGraphicsScene = None):
         super().__init__(scene=scene)
 
     def enable(self):
-        pass
+        self._scene.setItemsInteractivity(True)
 
     def disable(self):
-        for item in self._scene.selectedItems():
-            item.setSelected(False)
+        self._scene.setItemsInteractivity(False)
 
     def onMouseMove(self, e: QMouseEvent):
         pass

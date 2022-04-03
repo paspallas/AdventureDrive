@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (
     QApplication,
+    QDockWidget,
     QWidget,
     QTreeView,
     QFileSystemModel,
@@ -10,25 +11,22 @@ from PyQt5.QtCore import Qt, QEvent, QDir, pyqtSlot
 from PyQt5.QtGui import QCursor
 
 
-class FileBrowser(QWidget):
-    def __init__(self):
-        super().__init__()
+class FileBrowser(QDockWidget):
+    def __init__(self, parent=None):
+        super().__init__("File Browser", parent=parent)
 
-        self.setupUi()
-        self.populate()
+        self._setupUi()
+        self._populate()
 
-    def setupUi(self) -> None:
-        self.vbox = QVBoxLayout()
-        self.vbox.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(self.vbox)
+    def _setupUi(self) -> None:
+        self.setContentsMargins(0, 0, 0, 0)
         self.treeview = QTreeView(self)
-        self.vbox.addWidget(self.treeview)
-
         self.treeview.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treeview.customContextMenuRequested.connect(self.contextMenu)
         self.treeview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.setWidget(self.treeview)
 
-    def populate(self) -> None:
+    def _populate(self) -> None:
         self.model = QFileSystemModel()
         self.model.setRootPath(QDir.currentPath())
         self.treeview.setModel(self.model)
@@ -47,13 +45,3 @@ class FileBrowser(QWidget):
         import os
 
         os.startfile(filePath)
-
-
-if __name__ == "__main__":
-    import sys
-
-    app = QApplication([])
-    fb = FileBrowser()
-    fb.setWindowTitle("File Browser")
-    fb.show()
-    sys.exit(app.exec())

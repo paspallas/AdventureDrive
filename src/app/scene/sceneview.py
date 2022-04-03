@@ -14,13 +14,14 @@ from PyQt5.QtGui import (
     QMouseEvent,
     QWheelEvent,
     QKeyEvent,
+    QResizeEvent,
     QPixmap,
 )
 from app.ui.statusbar import StatusBar
 from .scenemodel import SceneModel
 
 kZoomFactor = 1.2
-kZoomMax = 25
+kZoomMax = 30
 kZoomMin = 0.5
 
 
@@ -37,14 +38,13 @@ class SceneView(QGraphicsView):
         self.setScene(self._scene)
         self._background = QGraphicsPixmapItem()
 
-        self._setupUi(background)
+        self._setupUi()
         self._notifyZoomChange(1)
 
-    @property
-    def scene(self) -> QGraphicsScene:
-        return self._scene
+        if background:
+            self.setBackgroundImage(background)
 
-    def _setupUi(self, background: QPixmap = None) -> None:
+    def _setupUi(self) -> None:
         self.setFrameStyle(QFrame.NoFrame)
         self.setContentsMargins(0, 0, 0, 0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -59,9 +59,6 @@ class SceneView(QGraphicsView):
             | QPainter.SmoothPixmapTransform
         )
 
-        if background:
-            self.setBackgroundImage(background)
-
     def setBackgroundImage(self, pixmap: QPixmap) -> None:
         self._background.setPixmap(pixmap)
         self._background.setFlag(QGraphicsItem.ItemIsMovable, False)
@@ -71,9 +68,6 @@ class SceneView(QGraphicsView):
         # adjust the scene rect size to the background image rect
         rect = self._background.boundingRect()
         self._scene.setSceneRect(rect.x(), rect.y(), rect.width(), rect.height())
-        self.fitInView(self._background, Qt.KeepAspectRatio)
-
-    def resizeEvent(self, e: QEvent) -> None:
         self.fitInView(self._background, Qt.KeepAspectRatio)
 
     def _enableViewPortPan(self, e: QMouseEvent) -> None:
@@ -157,6 +151,9 @@ class SceneView(QGraphicsView):
             self._disableViewPortPan(e)
         else:
             super().mouseReleaseEvent(e)
+
+    def resizeEvent(self, e: QResizeEvent) -> None:
+        self.fitInView(self._background, Qt.KeepAspectRatio)
 
     @pyqtSlot()
     def resetZoomLevel(self) -> None:

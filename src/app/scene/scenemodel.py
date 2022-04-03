@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt, QRectF, QLineF, QPointF, QEvent, pyqtSlot
-from PyQt5.QtWidgets import QGraphicsScene
-from PyQt5.QtGui import QPainter, QPen, QColor
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QGraphicsPixmapItem
+from PyQt5.QtGui import QPainter, QPen, QColor, QMouseEvent
 from app.tool.abstracttool import AbstractTool
 from importlib import import_module as imodule
 
@@ -13,28 +13,33 @@ class SceneModel(QGraphicsScene):
         super().__init__(parent)
 
         self._currentTool: AbstractTool = None
-
         self._setupUi()
 
     def _setupUi(self):
         self.setBackgroundBrush(QColor("#362F4F"))
 
-    def mouseMoveEvent(self, e: QEvent) -> None:
+    def mouseMoveEvent(self, e: QMouseEvent) -> None:
         if self._currentTool:
             self._currentTool.onMouseMove(e)
-        else:
+
+        # forward the event to the items in the scene
+        if not e.isAccepted():
             super().mouseMoveEvent(e)
 
-    def mousePressEvent(self, e: QEvent) -> None:
+    def mousePressEvent(self, e: QMouseEvent) -> None:
         if self._currentTool:
             self._currentTool.onMousePress(e)
-        else:
+
+        # forward the event to the items in the scene
+        if not e.isAccepted():
             super().mousePressEvent(e)
 
-    def mouseReleaseEvent(self, e: QEvent) -> None:
+    def mouseReleaseEvent(self, e: QMouseEvent) -> None:
         if self._currentTool:
             self._currentTool.onMouseRelease(e)
-        else:
+
+        # forward the event to the items in the scene
+        if not e.isAccepted():
             super().mouseReleaseEvent(e)
 
     @pyqtSlot(str)
@@ -49,6 +54,16 @@ class SceneModel(QGraphicsScene):
             self._currentTool = Tool(scene=self)
         except AttributeError as e:
             print(f"Tool class file not found: {e}")
+
+    @pyqtSlot(bool)
+    def setItemsInteractivity(self, val: bool = False):
+        for item in self.items():
+            if isinstance(item, QGraphicsPixmapItem):
+                """The background is always static"""
+                continue
+
+            item.setFlag(QGraphicsItem.ItemIsMovable, val)
+            item.setFlag(QGraphicsItem.ItemIsSelectable, val)
 
     def drawBackground(self, painter: QPainter, rect: QRectF) -> None:
         super().drawBackground(painter, rect)

@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QPointF, QRectF
-from PyQt5.QtWidgets import QGraphicsScene
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
 from PyQt5.QtGui import QMouseEvent
 from app.object.rectangle import Rectangle
 from .abstracttool import AbstractTool
@@ -16,6 +16,7 @@ class DrawBoxTool(AbstractTool):
 
     def disable(self):
         if self._item:
+            self._scene.removeItem(self._item._resizer)
             self._scene.removeItem(self._item)
 
     def onMouseMove(self, e: QMouseEvent) -> None:
@@ -28,6 +29,7 @@ class DrawBoxTool(AbstractTool):
                 rect=QRectF(0, 0, hintsize, hintsize),
                 scene=self._scene,
             )
+            self._item.setZValue(10000)
             self._scene.addItem(self._item)
 
         elif self._item and not self._origin:
@@ -41,14 +43,26 @@ class DrawBoxTool(AbstractTool):
 
             self._item.setRect(QRectF(0, 0, sizex, sizey).normalized())
 
+        e.accept()
+
     def onMousePress(self, e: QMouseEvent) -> None:
         """Capture drawing start position"""
+
         self._origin = e.scenePos()
 
+        e.accept()
+
     def onMouseRelease(self, e: QMouseEvent) -> None:
-        """Finish drawing"""
-        self._item = None
+        """Finish drawing and set the new item as static"""
+
+        if self._item:
+            self._item.setFlag(QGraphicsItem.ItemIsSelectable, False)
+            self._scene.removeItem(self._item._resizer)
+            self._item = None
+
         self._origin = None
 
+        e.accept()
+
     def onMouseDoubleClick(self, e: QMouseEvent):
-        pass
+        e.accept()

@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QSettings, QPoint, QSize
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QWidget, QMdiArea
 from .singleton import Singleton
 
 
