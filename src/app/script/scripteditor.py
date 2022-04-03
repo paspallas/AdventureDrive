@@ -1,3 +1,4 @@
+from PyQt5.QtPrintSupport import *
 from PyQt5.Qsci import *
 from PyQt5.QtGui import QFont, QColor, QKeySequence, QFontMetrics
 from PyQt5.QtCore import Qt, QSize, QFileInfo, QEvent

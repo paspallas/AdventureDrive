@@ -7,7 +7,10 @@ from app.utils.serializable import Serializable
 
 
 class Rectangle(QGraphicsRectItem, Serializable):
-    """Resizable rectangle"""
+
+    """This class represents an editable rectangle
+    used to delimit areas of interest in the scene
+    """
 
     def __init__(
         self,

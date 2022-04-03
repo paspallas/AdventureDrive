@@ -1,4 +1,6 @@
 .vscode/
-*.ini
 __pycache__/
+dist/
+build/
+*.ini
 *.pyc
