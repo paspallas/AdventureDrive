@@ -64,13 +64,10 @@ class SceneEditor(QMainWindow):
             f.write(f"{self._backgroundpath}\n")
 
             for i, item in enumerate(self._scene.items()):
-                if isinstance(item, QGraphicsPixmapItem):
+                if not isinstance(item, (Rectangle)):
                     continue
 
-                rect = item.boundingRect()
-                f.write(
-                    f"{i} {int(item.pos().x())} {int(item.pos().y())} {int(rect.width())} {int(rect.height())}\n"
-                )
+                f.write(f"{i}, {item.serialize()}\n")
 
     def deserialize(self, path: str) -> None:
         with open(path, "rt", encoding="utf-8", newline="\n") as f:
@@ -82,14 +79,13 @@ class SceneEditor(QMainWindow):
             for line in lines[1:]:
                 line = line.strip()
                 if len(line) > 0:
-                    i, x, y, w, h = line.split()
-                    self._scene.addItem(
-                        Rectangle(
-                            position=QPointF(float(x), float(y)),
-                            rect=QRectF(0, 0, float(w), float(h)),
-                            scene=self._scene,
-                        )
+                    item = Rectangle(
+                        position=QPointF(0, 0),
+                        rect=QRectF(0, 0, 0, 0),
+                        scene=self._scene,
                     )
+                    item.deserialize(line)
+                    self._scene.addItem(item)
 
             """ set items not interactable by default"""
             self._scene.setItemsInteractivity(False)

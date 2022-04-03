@@ -1,15 +1,18 @@
+from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
 from PyQt5.QtGui import QMouseEvent
-from abc import ABC, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 
 
-class AbstractTool(ABC):
+class AbstractObject(ABCMeta, type(QObject)):
+    pass
+
+
+class AbstractTool(ABC, metaclass=AbstractObject):
     def __init__(self, scene: QGraphicsScene = None):
         self._scene: QGraphicsScene = scene
         self._origin: QPointF = None
         self._item: QGraphicsItem = None
-
-        self.enable()
 
     @classmethod
     @abstractmethod

@@ -52,6 +52,7 @@ class SceneModel(QGraphicsScene):
         try:
             Tool = getattr(imodule(f"app.tool.{tool}".lower()), tool)
             self._currentTool = Tool(scene=self)
+            self._currentTool.enable()
         except AttributeError as e:
             print(f"Tool class file not found: {e}")
 

@@ -3,9 +3,10 @@ from PyQt5.QtCore import Qt, QRectF, QPointF, pyqtSignal, QEvent, pyqtSlot
 from PyQt5.QtGui import QPainter, QPen, QColor, QBrush
 from typing import Any
 from .resizer import Resizer
+from app.utils.serializable import Serializable
 
 
-class Rectangle(QGraphicsRectItem):
+class Rectangle(QGraphicsRectItem, Serializable):
     """Resizable rectangle"""
 
     def __init__(
@@ -81,3 +82,21 @@ class Rectangle(QGraphicsRectItem):
         self.setRect(self.rect().adjusted(0, 0, change.x(), change.y()).normalized())
         self.prepareGeometryChange()
         self.update()
+
+    def serialize(self) -> str:
+        return ",".join(
+            map(
+                lambda item: str(item),
+                [
+                    self.pos().x(),
+                    self.pos().y(),
+                    self.rect().width(),
+                    self.rect().height(),
+                ],
+            )
+        )
+
+    def deserialize(self, data: str) -> None:
+        (i, x, y, w, h) = data.split(",")
+        self.setPos(float(x), float(y))
+        self.setRect(0, 0, float(w), float(h))

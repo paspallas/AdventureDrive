@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QPointF, QRectF
+from PyQt5.QtCore import QPointF, QRectF, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
 from PyQt5.QtGui import QMouseEvent
 from app.object.rectangle import Rectangle
@@ -66,3 +66,7 @@ class DrawBoxTool(AbstractTool):
 
     def onMouseDoubleClick(self, e: QMouseEvent):
         e.accept()
+
+    @pyqtSlot(bool)
+    def snapToGrid(val: bool) -> None:
+        pass
