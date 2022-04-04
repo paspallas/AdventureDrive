@@ -7,23 +7,23 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPainter, QPen, QColor, QBrush
 from PyQt5.QtCore import Qt, QRectF, QPointF, pyqtSignal, QEvent
 from typing import Any
+from .rectangle import Rectangle
 
 
 class Resizer(QGraphicsObject):
-    """Resizer handle for object size manipulation"""
+    """Resizer handle for object edition"""
 
-    resize = pyqtSignal(QPointF, name="resized")
+    resize = pyqtSignal(QPointF, name="resize")
 
     def __init__(
         self,
-        rect=QRectF(0, 0, 10, 10),
         parent: QWidget = None,
-        scene: QGraphicsScene = None,
+        resizable: Rectangle = None,
     ):
         super().__init__(parent)
 
-        self._scene = scene
-        self._rect = rect
+        self._rect = QRectF(0, 0, 4, 4)
+        self._resizable = resizable
 
         flags = (
             QGraphicsItem.ItemIsMovable
@@ -31,14 +31,18 @@ class Resizer(QGraphicsObject):
             | QGraphicsItem.ItemSendsGeometryChanges
         )
         self.setFlags(flags)
-        self.setVisible(False)
+        self.setVisible(True)
 
-    @property
-    def rect(self) -> QRectF:
-        return self._rect
+        position = QPointF(
+            self._resizable.scenePos().x() + self._resizable.rect().width(),
+            self._resizable.scenePos().y() + self._resizable.rect().height(),
+        )
+        self.setPos(position)
+
+        # manipulate resizable object
+        self.resize.connect(lambda change: self._resizable.resize(change))
 
     def boundingRect(self) -> QRectF:
-        """Used by QgraphicsScene to handle collision detection"""
         return self._rect
 
     def paint(
@@ -47,13 +51,22 @@ class Resizer(QGraphicsObject):
         option,
         widget: QWidget = None,
     ) -> None:
-        if self.isSelected():
-            painter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))
-            painter.setBrush(Qt.white)
+        painter.setPen(QPen(Qt.magenta, 1, Qt.SolidLine))
+        painter.setBrush(Qt.transparent)
         painter.drawRect(self._rect)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QGraphicsItem.ItemPositionChange:
-            if self.isSelected():
-                self.resize.emit(value - self.pos())
-        return value
+
+            limit = QPointF(
+                self._resizable.scenePos().x(), self._resizable.scenePos().y()
+            )
+            value.setX(value.x() if value.x() >= limit.x() else limit.x())
+            value.setY(value.y() if value.y() >= limit.y() else limit.y())
+
+            """ resize by the delta movement"""
+            self.resize.emit(value - self.pos())
+
+            return value
+
+        return super().itemChange(change, value)

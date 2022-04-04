@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QEvent, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QEvent, QPointF, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import (
     QWidget,
     QGraphicsView,
@@ -151,6 +151,11 @@ class SceneView(QGraphicsView):
             self._disableViewPortPan(e)
         else:
             super().mouseReleaseEvent(e)
+
+    def mouseMoveEvent(self, e: QMouseEvent) -> None:
+        s: QPointF = self.mapToScene(e.pos())
+        StatusBar().bar.showMessage(f"({int(s.x())}, {int(s.y())})")
+        super().mouseMoveEvent(e)
 
     def resizeEvent(self, e: QResizeEvent) -> None:
         self.fitInView(self._background, Qt.KeepAspectRatio)

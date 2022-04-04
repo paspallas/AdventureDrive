@@ -35,9 +35,10 @@ class SceneEditor(QMainWindow):
         self._hotspot.triggered.connect(lambda: self._scene.setTool("DrawBoxTool"))
         self._hotspot.setCheckable(True)
 
-        self._resize = QAction("Edit object", self)
-        self._resize.setToolTip("Edit an object")
-        self._resize.setCheckable(True)
+        self._edit = QAction("Edit object", self)
+        self._edit.setToolTip("Edit an object")
+        self._edit.triggered.connect(lambda: self._scene.setTool("EditHotSpotTool"))
+        self._edit.setCheckable(True)
 
         self._select = QAction("Select object", self)
         self._select.setToolTip("Select an object")
@@ -45,12 +46,12 @@ class SceneEditor(QMainWindow):
         self._select.setCheckable(True)
 
         self._toolbar.addAction(self._hotspot)
-        self._toolbar.addAction(self._resize)
+        self._toolbar.addAction(self._edit)
         self._toolbar.addAction(self._select)
 
         group = QActionGroup(self)
         group.addAction(self._hotspot)
-        group.addAction(self._resize)
+        group.addAction(self._edit)
         group.addAction(self._select)
 
     # TODO this implementation lacks robustness
@@ -82,7 +83,6 @@ class SceneEditor(QMainWindow):
                     item = Rectangle(
                         position=QPointF(0, 0),
                         rect=QRectF(0, 0, 0, 0),
-                        scene=self._scene,
                     )
                     item.deserialize(line)
                     self._scene.addItem(item)

@@ -15,9 +15,11 @@ class SelectTool(AbstractTool):
         self._scene.setItemsInteractivity(True)
 
     def disable(self):
+        super().disable()
         self._scene.setItemsInteractivity(False)
 
     def onMouseMove(self, e: QMouseEvent):
+        """The selected item handles the event itself"""
         pass
 
     def onMousePress(self, e: QMouseEvent):
