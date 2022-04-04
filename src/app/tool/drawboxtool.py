@@ -2,9 +2,40 @@ from PyQt5.QtCore import QPointF, QRectF, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
 from PyQt5.QtGui import QMouseEvent
 from app.object.rectangle import Rectangle
-from .abstracttool import AbstractTool
+from .abstracttool import AbstractTool, AbstractToolState
 
-hintsize = 16
+
+class ShowHintRectangle(AbstractToolState):
+    def mouseMove(self, e: QMouseEvent) -> None:
+        self.tool._item.setPos(e.scenePos())
+
+    def mousePress(self, e: QMouseEvent) -> None:
+        self.tool._origin = e.scenePos()
+        self.tool.transition(PerformDraw())
+
+    def mouseRelease(self, e: QMouseEvent) -> None:
+        pass
+
+
+class PerformDraw(AbstractToolState):
+    def mouseMove(self, e: QMouseEvent) -> None:
+        sizex, sizey = (
+            e.scenePos().x() - self.tool._origin.x(),
+            e.scenePos().y() - self.tool._origin.y(),
+        )
+        sizex, sizey = (sizex if sizex > 0 else 1, sizey if sizey > 0 else 1)
+        self.tool._item.setRect(QRectF(0, 0, sizex, sizey))
+
+    def mousePress(self, e: QMouseEvent) -> None:
+        pass
+
+    def mouseRelease(self, e: QMouseEvent) -> None:
+        self.tool._item.setFlag(QGraphicsItem.ItemIsSelectable, False)
+        self.tool._item = None
+        self.tool._origin = None
+
+        self.tool.transition(ShowHintRectangle())
+        self.tool.createHintRect()
 
 
 class DrawBoxTool(AbstractTool):
@@ -13,60 +44,30 @@ class DrawBoxTool(AbstractTool):
 
         self._origin: QPointF = None
 
+    def createHintRect(self):
+        hintsize = 16
+        self._item = Rectangle(
+            position=QPointF(0, 0), rect=QRectF(0, 0, hintsize, hintsize)
+        )
+        self._scene.addItem(self._item)
+
     def enable(self):
-        pass
+        self.transition(ShowHintRectangle())
+        self.createHintRect()
 
     def disable(self):
         super().disable()
 
     def onMouseMove(self, e: QMouseEvent) -> None:
-        x, y = e.scenePos().x(), e.scenePos().y()
-
-        if not self._item and not self._origin:
-
-            """Show a rectangle of fixed size to hint the user"""
-
-            self._item = Rectangle(
-                position=QPointF(x, y),
-                rect=QRectF(0, 0, hintsize, hintsize),
-            )
-            self._item.setZValue(10000)
-            self._scene.addItem(self._item)
-
-        elif self._item and not self._origin:
-
-            """Move the hinting rectangle"""
-
-            self._item.setPos(x, y)
-
-        elif self._item and self._origin:
-
-            """Draw the final rectangle"""
-
-            sizex, sizey = (x - self._origin.x(), y - self._origin.y())
-            sizex, sizey = (sizex if sizex > 0 else 1, sizey if sizey > 0 else 1)
-
-            self._item.setRect(QRectF(0, 0, sizex, sizey).normalized())
-
+        self._state.mouseMove(e)
         e.accept()
 
     def onMousePress(self, e: QMouseEvent) -> None:
-
-        """Capture drawing start position"""
-
-        self._origin = e.scenePos()
-
+        self._state.mousePress(e)
         e.accept()
 
     def onMouseRelease(self, e: QMouseEvent) -> None:
-        """Finish drawing and set the new item as static"""
-
-        if self._item:
-            self._item.setFlag(QGraphicsItem.ItemIsSelectable, False)
-            self._item = None
-
-        self._origin = None
-
+        self._state.mouseRelease(e)
         e.accept()
 
     def onMouseDoubleClick(self, e: QMouseEvent):
