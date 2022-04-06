@@ -1,6 +1,12 @@
 from PyQt5.QtCore import Qt, QRectF, QLineF, QPointF, QEvent, pyqtSlot
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QGraphicsPixmapItem
-from PyQt5.QtGui import QPainter, QPen, QColor, QMouseEvent
+from PyQt5.QtWidgets import (
+    QGraphicsScene,
+    QGraphicsItem,
+    QGraphicsPixmapItem,
+    QGraphicsSceneHoverEvent,
+    QGraphicsSceneMouseEvent,
+)
+from PyQt5.QtGui import QPainter, QPen, QColor
 from app.tool.abstracttool import AbstractTool
 from importlib import import_module as imodule
 
@@ -18,35 +24,43 @@ class SceneModel(QGraphicsScene):
     def _setupUi(self):
         self.setBackgroundBrush(QColor("#362F4F"))
 
-    def mouseMoveEvent(self, e: QMouseEvent) -> None:
+    def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         if self._currentTool:
             self._currentTool.onMouseMove(e)
-
-        # forward the event to the items in the scene
         if not e.isAccepted():
             super().mouseMoveEvent(e)
 
-    def mousePressEvent(self, e: QMouseEvent) -> None:
+    def mousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         if self._currentTool:
             self._currentTool.onMousePress(e)
-
-        # forward the event to the items in the scene
         if not e.isAccepted():
             super().mousePressEvent(e)
 
-    def mouseReleaseEvent(self, e: QMouseEvent) -> None:
+    def mouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         if self._currentTool:
             self._currentTool.onMouseRelease(e)
-
-        # forward the event to the items in the scene
         if not e.isAccepted():
             super().mouseReleaseEvent(e)
+
+    def hoverEnterEvent(self, e: QGraphicsSceneHoverEvent) -> None:
+        if self._currentTool:
+            self._currentTool.hoverEnterEvent(e)
+        super().hoverEnterEvent(e)
+
+    def hoverMoveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
+        if self._currentTool:
+            self._currentTool.super().hoverMoveEvent(e)
+        super().hoverMoveEvent(e)
+
+    def hoverLeaveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
+        if self._currentTool:
+            self._currentTool.hoverLeaveEvent(e)
+        super().hoverLeaveEvent(e)
 
     @pyqtSlot(str)
     def setTool(self, tool: str) -> None:
         if self._currentTool:
             self._currentTool.disable()
-            # let python destroy the current instance
             self._currentTool = None
 
         try:

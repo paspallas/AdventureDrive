@@ -1,6 +1,10 @@
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
-from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtWidgets import (
+    QGraphicsScene,
+    QGraphicsItem,
+    QGraphicsSceneHoverEvent,
+    QGraphicsSceneMouseEvent,
+)
 from abc import ABC, ABCMeta, abstractmethod
 from app.utils.cursordecorators import defaultCursor
 
@@ -20,17 +24,17 @@ class AbstractToolState(ABC):
 
     @classmethod
     @abstractmethod
-    def mouseMove(self, e: QMouseEvent) -> None:
+    def mouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
 
     @classmethod
     @abstractmethod
-    def mousePress(self, e: QMouseEvent) -> None:
+    def mousePress(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
 
     @classmethod
     @abstractmethod
-    def mouseRelease(self, e: QMouseEvent) -> None:
+    def mouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
 
 
@@ -54,7 +58,6 @@ class AbstractTool(ABC, metaclass=AbstractObject):
     def enable(self) -> None:
         pass
 
-    # @defaultCursor
     def disable(self) -> None:
         self._state = None
 
@@ -64,23 +67,40 @@ class AbstractTool(ABC, metaclass=AbstractObject):
 
     @classmethod
     @abstractmethod
-    def onMouseMove(self, e: QMouseEvent) -> None:
+    def onMouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
 
     @classmethod
     @abstractmethod
-    def onMousePress(self, e: QMouseEvent) -> None:
+    def onMousePress(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
 
     @classmethod
     @abstractmethod
-    def onMouseDoubleClick(self, e: QMouseEvent) -> None:
+    def onMouseDoubleClick(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
 
     @classmethod
     @abstractmethod
-    def onMouseRelease(self, e: QMouseEvent) -> None:
+    def onMouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
+
+    """ 
+    Hover events don't usually need per tool state segregation,
+    a default implementation suffices
+    """
+
+    def hoverMoveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
+        if self._item:
+            self._item.hoverMoveEvent(e)
+
+    def hoverEnterEvent(self, e: QGraphicsSceneHoverEvent) -> None:
+        if self._item:
+            self._item.hoverEnterEvent(e)
+
+    def hoverLeaveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
+        if self._item:
+            self._item.hoverLeaveEvent(e)
 
     @pyqtSlot(bool)
     def snapToGrid(val: bool) -> None:

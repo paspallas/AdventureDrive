@@ -1,5 +1,10 @@
-from PyQt5.QtWidgets import QWidget, QGraphicsRectItem, QGraphicsItem
-from PyQt5.QtCore import Qt, QRectF, QPointF, pyqtSignal, QEvent, pyqtSlot
+from PyQt5.QtWidgets import (
+    QWidget,
+    QGraphicsRectItem,
+    QGraphicsItem,
+    QGraphicsSceneMouseEvent,
+)
+from PyQt5.QtCore import Qt, QRectF, QPointF, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPainter, QPen, QColor, QBrush
 from typing import Any
 from app.utils.serializable import Serializable
@@ -58,7 +63,7 @@ class Rectangle(QGraphicsRectItem, Serializable):
 
     #     return super().itemChange(change, value)
 
-    def mouseMoveEvent(self, e: QEvent) -> None:
+    def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         if e.buttons() & Qt.LeftButton:
             super().mouseMoveEvent(e)
 

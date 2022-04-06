@@ -1,26 +1,31 @@
 from PyQt5.QtCore import Qt, QPointF, QRectF, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QGraphicsLineItem
-from PyQt5.QtGui import QMouseEvent, QCursor, QPen
+from PyQt5.QtWidgets import (
+    QGraphicsScene,
+    QGraphicsItem,
+    QGraphicsLineItem,
+    QGraphicsSceneMouseEvent,
+)
+from PyQt5.QtGui import QCursor, QPen
 from app.object.rectangle import Rectangle
 from app.utils.cursordecorators import *
 from .abstracttool import AbstractTool, AbstractToolState
 
 
 class ShowHintRectangle(AbstractToolState):
-    def mouseMove(self, e: QMouseEvent) -> None:
+    def mouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
         # self.tool._item.setPos(e.scenePos())
 
-    def mousePress(self, e: QMouseEvent) -> None:
+    def mousePress(self, e: QGraphicsSceneMouseEvent) -> None:
         self.tool._origin = e.scenePos()
         self.tool.transition(PerformDraw())
 
-    def mouseRelease(self, e: QMouseEvent) -> None:
+    def mouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
 
 
 class PerformDraw(AbstractToolState):
-    def mouseMove(self, e: QMouseEvent) -> None:
+    def mouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
         sizex, sizey = (
             e.scenePos().x() - self.tool._origin.x(),
             e.scenePos().y() - self.tool._origin.y(),
@@ -28,10 +33,10 @@ class PerformDraw(AbstractToolState):
         sizex, sizey = (sizex if sizex > 0 else 1, sizey if sizey > 0 else 1)
         self.tool._item.setRect(QRectF(0, 0, sizex, sizey))
 
-    def mousePress(self, e: QMouseEvent) -> None:
+    def mousePress(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
 
-    def mouseRelease(self, e: QMouseEvent) -> None:
+    def mouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         self.tool._item.setFlag(QGraphicsItem.ItemIsSelectable, False)
         self.tool._item = None
         self.tool._origin = None
@@ -71,7 +76,6 @@ class DrawBoxTool(AbstractTool):
         )
         self._scene.addItem(self._item)
 
-    # @crossHairCursor
     def enable(self) -> None:
         self.transition(ShowHintRectangle())
         # self.createHintRect()
@@ -79,19 +83,19 @@ class DrawBoxTool(AbstractTool):
     def disable(self) -> None:
         super().disable()
 
-    def onMouseMove(self, e: QMouseEvent) -> None:
+    def onMouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
         self._crossh.setPos(self._crossh.pos().x(), e.scenePos().y())
         self._crossv.setPos(e.scenePos().x(), self._crossv.pos().y())
         self._state.mouseMove(e)
         e.accept()
 
-    def onMousePress(self, e: QMouseEvent) -> None:
+    def onMousePress(self, e: QGraphicsSceneMouseEvent) -> None:
         self._state.mousePress(e)
         e.accept()
 
-    def onMouseRelease(self, e: QMouseEvent) -> None:
+    def onMouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         self._state.mouseRelease(e)
         e.accept()
 
-    def onMouseDoubleClick(self, e: QMouseEvent) -> None:
+    def onMouseDoubleClick(self, e: QGraphicsSceneMouseEvent) -> None:
         e.accept()

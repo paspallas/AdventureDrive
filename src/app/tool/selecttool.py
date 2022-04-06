@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
-from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QGraphicsSceneMouseEvent
 from .abstracttool import AbstractTool
 
 
@@ -18,15 +17,15 @@ class SelectTool(AbstractTool):
         super().disable()
         self._scene.setItemsInteractivity(False)
 
-    def onMouseMove(self, e: QMouseEvent):
+    def onMouseMove(self, e: QGraphicsSceneMouseEvent):
         """The selected item handles the event itself"""
         pass
 
-    def onMousePress(self, e: QMouseEvent):
+    def onMousePress(self, e: QGraphicsSceneMouseEvent):
         pass
 
-    def onMouseDoubleClick(self, e: QMouseEvent):
+    def onMouseDoubleClick(self, e: QGraphicsSceneMouseEvent):
         pass
 
-    def onMouseRelease(self, e: QMouseEvent):
+    def onMouseRelease(self, e: QGraphicsSceneMouseEvent):
         pass

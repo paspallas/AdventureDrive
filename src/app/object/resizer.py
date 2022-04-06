@@ -1,6 +1,13 @@
-from PyQt5.QtWidgets import QWidget, QGraphicsScene, QGraphicsObject, QGraphicsItem
-from PyQt5.QtGui import QPainter, QPainterPath, QPen, QColor, QBrush, QMouseEvent
-from PyQt5.QtCore import Qt, QRectF, QSize, QPointF, pyqtSignal, QEvent
+from PyQt5.QtWidgets import (
+    QWidget,
+    QGraphicsScene,
+    QGraphicsObject,
+    QGraphicsItem,
+    QGraphicsSceneMouseEvent,
+    QGraphicsSceneHoverEvent,
+)
+from PyQt5.QtGui import QPainter, QPainterPath, QPen, QColor, QBrush
+from PyQt5.QtCore import Qt, QRectF, QSize, QPointF, pyqtSignal
 from typing import Any, Dict
 from .rectangle import Rectangle
 
@@ -132,7 +139,7 @@ class Resizer(QGraphicsObject):
         if handle == "Bottom":
             return QPointF(b.center().x(), b.bottom())
 
-    def mouseMoveEvent(self, e: QMouseEvent) -> None:
+    def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
 
         """Edit the object if the user clicked on a handle"""
 
@@ -141,7 +148,7 @@ class Resizer(QGraphicsObject):
 
         super().mouseMoveEvent(e)
 
-    def mousePressEvent(self, e: QMouseEvent) -> None:
+    def mousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
 
         """Capture clicked handle"""
 
@@ -153,12 +160,12 @@ class Resizer(QGraphicsObject):
 
         super().mousePressEvent(e)
 
-    def mouseReleaseEvent(self, e: QMouseEvent) -> None:
+    def mouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         self._selectedHandle = None
 
         super().mouseReleaseEvent(e)
 
-    def hoverMoveEvent(self, e) -> None:
+    def hoverMoveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
         super().hoverMoveEvent(e)
 
         print("hover")

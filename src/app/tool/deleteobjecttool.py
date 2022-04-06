@@ -1,6 +1,5 @@
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
-from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QGraphicsSceneMouseEvent
 from .abstracttool import AbstractTool
 
 
@@ -14,17 +13,17 @@ class DeleteObjectTool(AbstractTool):
     def disable(self) -> None:
         super().disable()
 
-    def onMouseMove(self, e: QMouseEvent) -> None:
+    def onMouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
         e.accept()
 
-    def onMousePress(self, e: QMouseEvent) -> None:
+    def onMousePress(self, e: QGraphicsSceneMouseEvent) -> None:
         item = self._scene.itemAt(e.scenePos(), self._scene.views()[0].transform())
         if isinstance(item, QGraphicsItem):
             self._scene.removeItem(item)
         e.accept()
 
-    def onMouseRelease(self, e: QMouseEvent) -> None:
+    def onMouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         e.accept()
 
-    def onMouseDoubleClick(self, e: QMouseEvent) -> None:
+    def onMouseDoubleClick(self, e: QGraphicsSceneMouseEvent) -> None:
         e.accept()
