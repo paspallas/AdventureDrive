@@ -14,16 +14,15 @@ class DeleteObjectTool(AbstractTool):
         super().disable()
 
     def onMouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
-        e.accept()
+        pass
 
     def onMousePress(self, e: QGraphicsSceneMouseEvent) -> None:
         item = self._scene.itemAt(e.scenePos(), self._scene.views()[0].transform())
         if isinstance(item, QGraphicsItem):
             self._scene.removeItem(item)
-        e.accept()
 
     def onMouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
-        e.accept()
+        pass
 
     def onMouseDoubleClick(self, e: QGraphicsSceneMouseEvent) -> None:
-        e.accept()
+        pass

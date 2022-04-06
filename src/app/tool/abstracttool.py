@@ -2,7 +2,6 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import (
     QGraphicsScene,
     QGraphicsItem,
-    QGraphicsSceneHoverEvent,
     QGraphicsSceneMouseEvent,
 )
 from abc import ABC, ABCMeta, abstractmethod
@@ -84,23 +83,6 @@ class AbstractTool(ABC, metaclass=AbstractObject):
     @abstractmethod
     def onMouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
-
-    """ 
-    Hover events don't usually need per tool state segregation,
-    a default implementation suffices
-    """
-
-    def hoverMoveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
-        if self._item:
-            self._item.hoverMoveEvent(e)
-
-    def hoverEnterEvent(self, e: QGraphicsSceneHoverEvent) -> None:
-        if self._item:
-            self._item.hoverEnterEvent(e)
-
-    def hoverLeaveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
-        if self._item:
-            self._item.hoverLeaveEvent(e)
 
     @pyqtSlot(bool)
     def snapToGrid(val: bool) -> None:

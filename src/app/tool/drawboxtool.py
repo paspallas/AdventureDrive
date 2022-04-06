@@ -87,15 +87,12 @@ class DrawBoxTool(AbstractTool):
         self._crossh.setPos(self._crossh.pos().x(), e.scenePos().y())
         self._crossv.setPos(e.scenePos().x(), self._crossv.pos().y())
         self._state.mouseMove(e)
-        e.accept()
 
     def onMousePress(self, e: QGraphicsSceneMouseEvent) -> None:
         self._state.mousePress(e)
-        e.accept()
 
     def onMouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         self._state.mouseRelease(e)
-        e.accept()
 
     def onMouseDoubleClick(self, e: QGraphicsSceneMouseEvent) -> None:
-        e.accept()
+        pass

@@ -14,6 +14,7 @@ from PyQt5.QtGui import (
     QPainter,
     QMouseEvent,
     QWheelEvent,
+    QHoverEvent,
     QKeyEvent,
     QResizeEvent,
     QPixmap,
@@ -164,6 +165,7 @@ class SceneView(QGraphicsView):
     def mouseMoveEvent(self, e: QMouseEvent) -> None:
         s: QPointF = self.mapToScene(e.pos())
         StatusBar().bar.showMessage(f"({int(s.x())}, {int(s.y())})")
+
         super().mouseMoveEvent(e)
 
     def resizeEvent(self, e: QResizeEvent) -> None:
