@@ -6,11 +6,13 @@ from PyQt5.QtWidgets import (
     QActionGroup,
     QGraphicsScene,
     QGraphicsView,
+    QGraphicsItem,
     QGraphicsPixmapItem,
 )
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QFileInfo, QRectF, QPointF
 from PyQt5.QtGui import QPixmap
 from app.object.rectangle import Rectangle
+from app.object.sprite import Sprite
 from .sceneview import SceneView
 from .scenemodel import SceneModel
 
@@ -21,6 +23,16 @@ class SceneEditor(QMainWindow):
 
         self._setupUi()
         self._setupToolBar()
+
+        # TODO test
+        self._sprite = Sprite()
+        self._sprite.setPixmap(
+            QPixmap("F:/devel/sega/berlin/AdventureDrive/serpiente.PNG").copy(
+                8, 10, 42, 61
+            )
+        )
+        self._sprite.setPos(10, 10)
+        self._scene.addItem(self._sprite)
 
     def _setupUi(self):
         self._scene: QGraphicsScene = SceneModel()
@@ -45,14 +57,21 @@ class SceneEditor(QMainWindow):
         self._select.triggered.connect(lambda: self._scene.setTool("SelectTool"))
         self._select.setCheckable(True)
 
+        self._delete = QAction("Delete object", self)
+        self._delete.setToolTip("Delete and object")
+        self._delete.triggered.connect(lambda: self._scene.setTool("DeleteObjectTool"))
+        self._delete.setCheckable(True)
+
         self._toolbar.addAction(self._hotspot)
         self._toolbar.addAction(self._edit)
         self._toolbar.addAction(self._select)
+        self._toolbar.addAction(self._delete)
 
         group = QActionGroup(self)
         group.addAction(self._hotspot)
         group.addAction(self._edit)
         group.addAction(self._select)
+        group.addAction(self._delete)
 
     # TODO this implementation lacks robustness
     def setBackgroundImage(self, path: str) -> None:

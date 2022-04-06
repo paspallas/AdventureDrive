@@ -2,6 +2,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
 from PyQt5.QtGui import QMouseEvent
 from abc import ABC, ABCMeta, abstractmethod
+from app.utils.cursordecorators import defaultCursor
 
 
 class AbstractTool:
@@ -44,7 +45,7 @@ class AbstractTool(ABC, metaclass=AbstractObject):
         self._item: QGraphicsItem = None
         self._state: AbstractToolState = None
 
-    def transition(self, state: AbstractToolState):
+    def transition(self, state: AbstractToolState) -> None:
         self._state = state
         self._state.tool = self
 
@@ -53,6 +54,7 @@ class AbstractTool(ABC, metaclass=AbstractObject):
     def enable(self) -> None:
         pass
 
+    # @defaultCursor
     def disable(self) -> None:
         self._state = None
 

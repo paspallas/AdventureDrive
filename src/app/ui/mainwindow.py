@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
     QToolBar,
     QListWidget,
 )
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QMouseEvent
 from app.utils.action import *
 from app.utils.fileio import FileIOControl
 from app.utils.settings import SettingsManager
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(StatusBar().bar)
         SettingsManager().read(self)
 
-    def _setupUi(self):
+    def _setupUi(self) -> None:
         self.setMinimumSize(QSize(800, 600))
         self._mdiArea = MdiContainer(self)
         self.setCentralWidget(self._mdiArea)
@@ -49,11 +49,11 @@ class MainWindow(QMainWindow):
         self._dock.setWidget(self._list)
         self.addDockWidget(Qt.RightDockWidgetArea, self._dock)
 
-        self._filebrowser = FileBrowser(self)
-        self.addDockWidget(Qt.LeftDockWidgetArea, self._filebrowser)
+        # self._filebrowser = FileBrowser(self)
+        # self.addDockWidget(Qt.LeftDockWidgetArea, self._filebrowser)
 
     #! TO DISABLE menu entries use action.setEnable(False)
-    def _createMenus(self):
+    def _createMenus(self) -> None:
         menubar = self.menuBar()
         file = menubar.addMenu("&File")
         edit = menubar.addMenu("&Edit")
@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
             ]
         )
 
-    def _new(self):
+    def _new(self) -> None:
         path, file = FileIOControl().openFile("Background Images (*.png)")
         if path:
             child = self._mdiArea.createMdiChild()
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
             child.setBackgroundImage(path)
             child.showMaximized()
 
-    def _open(self):
+    def _open(self) -> None:
         path, file = FileIOControl().openFile("Scene Files (*.txt)")
         if path:
             child = self._mdiArea.createMdiChild()
@@ -134,7 +134,7 @@ class MainWindow(QMainWindow):
             child.deserialize(path)
             child.showMaximized()
 
-    def _save(self):
+    def _save(self) -> None:
         # grab the active document before opening the save file dialog
         document = self._mdiArea.activeSubWindow().widget()
         if not isinstance(document, (SceneEditor, ScriptEditor)):
@@ -145,15 +145,21 @@ class MainWindow(QMainWindow):
             document.serialize(path)
             document.setWindowTitle(file)
 
-    def _editScript(self):
+    def _editScript(self) -> None:
         child = SceneEditor()
         self._mdiArea.addSubWindow(child)
         child.showMaximized()
 
-    def closeEvent(self, e: QEvent):
+    def closeEvent(self, e: QEvent) -> None:
         self._mdiArea.closeAllSubWindows()
         if self._mdiArea.currentSubWindow():
             e.ignore()
         else:
             SettingsManager().write(self)
             e.accept()
+
+    def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
+        if self.isFullScreen():
+            self.setWindowState(Qt.WindowMaximized)
+        else:
+            self.setWindowState(Qt.WindowFullScreen)

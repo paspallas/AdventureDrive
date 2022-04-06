@@ -1,9 +1,12 @@
-# adventure drive project makefile
-
 RM  := rm -rf
-RC  := pyrrc5
+RC  := pyrcc5
 NSI := makensis
 PYI := pyinstaller
+PY 	:= python3.9
+
+.PHONY:
+test:
+	@$(PY) src/main.py
 
 .PHONY:
 app:
@@ -19,7 +22,7 @@ distclean: clean
 	@$(RM) dist build
 
 .PHONY:
-res: src/resources.py
+res: src/app/resources.py
 
-*.py: *.qrc
-	@$(RC) $< -o $@
+src/app/resources.py: resources/resources.qrc
+	@$(RC) -no-compress $< -o $@

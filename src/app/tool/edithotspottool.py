@@ -8,19 +8,24 @@ from .abstracttool import AbstractTool, AbstractToolState
 
 class HandleResizerInteraction(AbstractToolState):
     def mouseMove(self, e: QMouseEvent) -> None:
-        if self.tool._item.isSelected():
-            self.tool._item.setPos(e.scenePos())
+        # if self.tool._item.isSelected():
+        self.tool._item.mouseMoveEvent(e)
+        # self.tool._item.setPos(e.scenePos())
 
     def mousePress(self, e: QMouseEvent) -> None:
-        resizer = self.tool._scene.itemAt(
-            e.scenePos(), self.tool._scene.views()[0].transform()
-        )
+        # resizer = self.tool._scene.itemAt(
+        #     e.scenePos(), self.tool._scene.views()[0].transform()
+        # )
 
-        if resizer is self.tool._item:
-            self.tool._item.setSelected(True)
+        # if resizer is self.tool._item:
+        self.tool._item.setSelected(True)
+        self.tool._item.mousePressEvent(e)
 
     def mouseRelease(self, e: QMouseEvent) -> None:
-        self.tool._item.setSelected(False)
+        self.tool._item.mouseReleaseEvent(e)
+        # if resizer is self.tool._item:
+        #     self.tool._item.onMouseRelease(e)
+        # self.tool._item.setSelected(False)
 
 
 class SelectEditableObject(AbstractToolState):

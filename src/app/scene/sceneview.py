@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
     QStyleOptionGraphicsItem,
     QGraphicsItem,
     QGraphicsPixmapItem,
+    QOpenGLWidget,
 )
 from PyQt5.QtGui import (
     QPainter,
@@ -16,6 +17,7 @@ from PyQt5.QtGui import (
     QKeyEvent,
     QResizeEvent,
     QPixmap,
+    QSurfaceFormat,
 )
 from app.ui.statusbar import StatusBar
 from .scenemodel import SceneModel
@@ -39,6 +41,7 @@ class SceneView(QGraphicsView):
         self._background = QGraphicsPixmapItem()
 
         self._setupUi()
+        self.setMouseTracking(True)
         self._notifyZoomChange(1)
 
         if background:
@@ -52,12 +55,18 @@ class SceneView(QGraphicsView):
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setRenderHints(
-            QPainter.Antialiasing
-            | QPainter.HighQualityAntialiasing
-            | QPainter.TextAntialiasing
-            | QPainter.SmoothPixmapTransform
-        )
+        self.setCacheMode(QGraphicsView.CacheBackground)
+
+        # fmt = QSurfaceFormat()
+        # fmt.setSamples(1)
+        # gl = QOpenGLWidget()
+        # gl.setFormat(fmt)
+        # self.setViewport(gl)
+        # self.setRenderHints(
+        #     QPainter.Antialiasing
+        #     | QPainter.TextAntialiasing
+        #     | QPainter.SmoothPixmapTransform
+        # )
 
     def setBackgroundImage(self, pixmap: QPixmap) -> None:
         self._background.setPixmap(pixmap)

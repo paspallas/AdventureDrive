@@ -66,40 +66,40 @@ class SceneModel(QGraphicsScene):
             item.setFlag(QGraphicsItem.ItemIsMovable, val)
             item.setFlag(QGraphicsItem.ItemIsSelectable, val)
 
-    def drawBackground(self, painter: QPainter, rect: QRectF) -> None:
-        super().drawBackground(painter, rect)
+    # def drawForeground(self, painter: QPainter, rect: QRectF) -> None:
+    #     super().drawForeground(painter, rect)
 
-        left = int(rect.left())
-        right = int(rect.right())
-        top = int(rect.top())
-        bottom = int(rect.bottom())
+    #     left = int(rect.left())
+    #     right = int(rect.right())
+    #     top = int(rect.top())
+    #     bottom = int(rect.bottom())
 
-        first_l = left - (left % kFineGridSize)
-        first_t = top - (top % kFineGridSize)
+    #     first_l = left - (left % kFineGridSize)
+    #     first_t = top - (top % kFineGridSize)
 
-        grid = []
-        fine = []
+    #     grid = []
+    #     fine = []
 
-        for x in range(first_l, right, kFineGridSize):
-            if x % kGridSize != 0:
-                fine.append(QLineF(x, top, x, bottom))
-            else:
-                grid.append(QLineF(x, top, x, bottom))
+    #     for x in range(first_l, right, kFineGridSize):
+    #         if x % kGridSize != 0:
+    #             fine.append(QLineF(x, top, x, bottom))
+    #         else:
+    #             grid.append(QLineF(x, top, x, bottom))
 
-        for y in range(first_t, bottom, kFineGridSize):
-            if y % kGridSize != 0:
-                fine.append(QLineF(left, y, right, y))
-            else:
-                grid.append(QLineF(left, y, right, y))
+    #     for y in range(first_t, bottom, kFineGridSize):
+    #         if y % kGridSize != 0:
+    #             fine.append(QLineF(left, y, right, y))
+    #         else:
+    #             grid.append(QLineF(left, y, right, y))
 
-        if len(fine) > 0:
-            pen = QPen(QColor("#292929"), 1, Qt.DotLine)
-            pen.setCosmetic(True)
-            painter.setPen(pen)
-            painter.drawLines(*fine)
+    #     if len(fine) > 0:
+    #         pen = QPen(QColor("#292929"), 1, Qt.DotLine)
+    #         pen.setCosmetic(True)
+    #         painter.setPen(pen)
+    #         painter.drawLines(*fine)
 
-        if len(grid) > 0:
-            pen = QPen(QColor("#2f2f2f"), 1, Qt.SolidLine)
-            pen.setCosmetic(True)
-            painter.setPen(pen)
-            painter.drawLines(*grid)
+    #     if len(grid) > 0:
+    #         pen = QPen(QColor("#2f2f2f"), 1, Qt.SolidLine)
+    #         pen.setCosmetic(True)
+    #         painter.setPen(pen)
+    #         painter.drawLines(*grid)

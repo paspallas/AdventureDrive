@@ -62,15 +62,19 @@ class Rectangle(QGraphicsRectItem, Serializable):
         if e.buttons() & Qt.LeftButton:
             super().mouseMoveEvent(e)
 
-    @pyqtSlot(QPointF)
-    def resize(self, change: QPointF) -> None:
+    @pyqtSlot(QRectF)
+    def resize(self, change: QRectF) -> None:
         # """Snap movement to the grid"""
         # x = round(change.x() / 32) * 32
         # y = round(change.y() / 32) * 32
 
-        self.setRect(self.rect().adjusted(0, 0, change.x(), change.y()))
         self.prepareGeometryChange()
-        self.update()
+        self.setRect(change)
+
+    @pyqtSlot(QPointF)
+    def position(self, change: QPointF) -> None:
+        self.prepareGeometryChange()
+        self.setPos(change)
 
     def serialize(self) -> str:
         return ",".join(
