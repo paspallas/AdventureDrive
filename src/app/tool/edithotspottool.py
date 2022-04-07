@@ -3,28 +3,22 @@ from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QGraphicsSceneMouseEv
 from app.object.rectangle import Rectangle
 from app.object.resizer import Resizer
 from .abstracttool import AbstractTool, AbstractToolState
+from app.utils.cursordecorators import setCursor
 
 
 class HandleResizerInteraction(AbstractToolState):
     def mouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
-        # if self.tool._item.isSelected():
-        self.tool._item.mouseMoveEvent(e)
-        # self.tool._item.setPos(e.scenePos())
+        self.tool._item.onMouseMoveEvent(e)
 
     def mousePress(self, e: QGraphicsSceneMouseEvent) -> None:
-        # resizer = self.tool._scene.itemAt(
-        #     e.scenePos(), self.tool._scene.views()[0].transform()
-        # )
-
-        # if resizer is self.tool._item:
-        self.tool._item.setSelected(True)
-        self.tool._item.mousePressEvent(e)
+        resizer = self.tool._scene.itemAt(
+            e.scenePos(), self.tool._scene.views()[0].transform()
+        )
+        if resizer is self.tool._item:
+            self.tool._item.onMousePressEvent(e)
 
     def mouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
-        self.tool._item.mouseReleaseEvent(e)
-        # if resizer is self.tool._item:
-        #     self.tool._item.onMouseRelease(e)
-        # self.tool._item.setSelected(False)
+        self.tool._item.onMouseReleaseEvent(e)
 
 
 class SelectEditableObject(AbstractToolState):
@@ -38,6 +32,7 @@ class SelectEditableObject(AbstractToolState):
 
         if isinstance(selected, Rectangle):
             self.tool._item = Resizer(resizable=selected)
+            self.tool._item.setSelected(True)
             self.tool._scene.addItem(self._tool._item)
             self.tool.transition(HandleResizerInteraction())
 

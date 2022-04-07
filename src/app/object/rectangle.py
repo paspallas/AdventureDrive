@@ -39,17 +39,21 @@ class Rectangle(QGraphicsRectItem, Serializable):
         option,
         widget: QWidget = None,
     ) -> None:
-        pen = QPen(Qt.blue, 3, Qt.SolidLine)
-        brush = QBrush(QColor(140, 140, 140, 100))
 
-        if self.isSelected():
-            pen.setStyle(Qt.DashLine)
-        else:
-            brush.setColor(Qt.transparent)
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        pen = QPen(Qt.magenta, 0, Qt.SolidLine)
+        brush = QBrush(QColor(Qt.transparent))
 
         painter.setPen(pen)
         painter.setBrush(brush)
         painter.drawRect(self.rect())
+
+        # draw inner shadow
+        pen.setColor(QColor(100, 100, 100, 100))
+        pen.setWidth(0.6)
+        painter.setPen(pen)
+        painter.drawRect(self.rect().adjusted(0.5, 0.5, -0.5, -0.5))
 
     # def itemChange(
     #     self, change: QGraphicsItem.GraphicsItemChange, value: Any
@@ -79,7 +83,9 @@ class Rectangle(QGraphicsRectItem, Serializable):
     @pyqtSlot(QPointF)
     def position(self, change: QPointF) -> None:
         self.prepareGeometryChange()
-        self.setPos(change)
+        self.setRect(
+            self.rect().adjusted(change.x(), change.y(), change.x(), change.y())
+        )
 
     def serialize(self) -> str:
         return ",".join(

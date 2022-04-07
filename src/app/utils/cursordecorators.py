@@ -34,7 +34,7 @@ def setCursor(klass):
             method = self.tool.__getattribute__(name)
 
             if method.__name__ == "enable":
-                QApplication.setOverrideCursor(QCursor(Qt.CrossCursor))
+                QApplication.setOverrideCursor(QCursor(Qt.SizeAllCursor))
                 return method
             elif method.__name__ == "disable":
                 QApplication.restoreOverrideCursor()

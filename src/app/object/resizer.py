@@ -7,12 +7,13 @@ from PyQt5.QtWidgets import (
     QGraphicsSceneHoverEvent,
 )
 from PyQt5.QtGui import QPainter, QPainterPath, QPen, QColor, QBrush
-from PyQt5.QtCore import Qt, QRectF, QSize, QPointF, pyqtSignal
+from PyQt5.QtCore import Qt, QRectF, QLineF, QPointF, pyqtSignal
 from typing import Any, Dict
 from .rectangle import Rectangle
 
 
 class Resizer(QGraphicsObject):
+
     """Resizer handle for object edition"""
 
     resize = pyqtSignal(QRectF, name="resize")
@@ -28,17 +29,14 @@ class Resizer(QGraphicsObject):
         self._resizable = resizable
         self._rect: QRectF = resizable.rect()
 
+        self._handleSize = 3
+
         self._mouseOrigin: QPointF = None
         self._boundingRectPoint: QPointF = None
-        self._handleSize = 4
-        self._selectedHandle: int = None
+        self._selectedHandle: str = None
         self._handles: Dict[str, QRectF] = {}
 
-        flags = (
-            QGraphicsItem.ItemIsSelectable
-            | QGraphicsItem.ItemSendsGeometryChanges
-            | QGraphicsItem.ItemIsFocusable
-        )
+        flags = QGraphicsItem.ItemSendsGeometryChanges | QGraphicsItem.ItemIsFocusable
         self.setFlags(flags)
         self.setVisible(True)
         self.setAcceptHoverEvents(True)
@@ -49,6 +47,18 @@ class Resizer(QGraphicsObject):
 
         """ Manipulate resizable object """
         self.resize.connect(lambda change: self._resizable.resize(change))
+        self.positionChange.connect(lambda change: self._resizable.position(change))
+
+        self._cursors = {
+            "TopLeft": Qt.SizeFDiagCursor,
+            "Top": Qt.SizeVerCursor,
+            "TopRight": Qt.SizeBDiagCursor,
+            "Left": Qt.SizeHorCursor,
+            "Right": Qt.SizeHorCursor,
+            "BottomLeft": Qt.SizeBDiagCursor,
+            "Bottom": Qt.SizeVerCursor,
+            "BottomRight": Qt.SizeFDiagCursor,
+        }
 
     def _handleAt(self, point: QPointF) -> Any:
 
@@ -56,7 +66,6 @@ class Resizer(QGraphicsObject):
         Return the handle at the given point.
         All rect coordinates are stored in 'local' space
         """
-
         for handle, rect in self._handles.items():
             if self.mapRectToScene(rect).contains(point):
                 return handle
@@ -64,40 +73,22 @@ class Resizer(QGraphicsObject):
 
     def _updateHandlePositions(self):
         s = self._handleSize
-        o = s // 2
         b = self._rect
 
         """ Center the handles in the corners of the bounding rect """
-        self._handles["TopLeft"] = QRectF(b.left() - o, b.top() - o, s, s)
-        self._handles["Left"] = QRectF(b.left() - o, b.center().y(), s, s)
-        self._handles["BottomLeft"] = QRectF(b.left() - o, b.bottom() - o, s, s)
-        self._handles["TopRight"] = QRectF(b.right() - o, b.top() - o, s, s)
-        self._handles["Right"] = QRectF(b.right() - o, b.center().y(), s, s)
-        self._handles["BottomRight"] = QRectF(b.right() - o, b.bottom() - o, s, s)
-        self._handles["Top"] = QRectF(b.center().x(), b.top() - o, s, s)
-        self._handles["Bottom"] = QRectF(b.center().x(), b.bottom() - o, s, s)
+        self._handles["TopLeft"] = QRectF(b.left() - s, b.top() - s, s, s)
+        self._handles["Left"] = QRectF(b.left() - s - 0.5, b.center().y() - s / 2, s, s)
+        self._handles["BottomLeft"] = QRectF(b.left() - s, b.bottom(), s, s)
+        self._handles["TopRight"] = QRectF(b.right(), b.top() - s, s, s)
+        self._handles["Right"] = QRectF(b.right() + 0.5, b.center().y() - s / 2, s, s)
+        self._handles["BottomRight"] = QRectF(b.right(), b.bottom(), s, s)
+        self._handles["Top"] = QRectF(b.center().x() - s / 2, b.top() - s - 0.5, s, s)
+        self._handles["Bottom"] = QRectF(b.center().x() - s / 2, b.bottom() + 0.5, s, s)
 
-    def boundingRect(self) -> QRectF:
-
-        """Adjust the bounding rect so that it contains the handles"""
-
-        return self._rect.adjusted(
-            -self._handleSize, -self._handleSize, self._handleSize, self._handleSize
-        )
-
-    def shape(self) -> QPainterPath:
-        path = QPainterPath()
-        path.addRect(self._rect)
-        if self.isSelected():
-            for shape in self._handles.values():
-                path.addEllipse(shape)
-        return path
-
-    def _performResize(self, currentMouse: QPointF) -> None:
-
+    def _updateItemSize(self, e: QGraphicsSceneMouseEvent) -> None:
+        delta = QPointF(e.scenePos() - self._mouseOrigin)
         handle = self._selectedHandle
         setter = self._rect.__getattribute__("set" + handle)
-        delta = QPointF(currentMouse - self._mouseOrigin)
 
         if handle in ("Left, Right"):
             setter(self._boundingRectPoint.x() + delta.x())
@@ -106,21 +97,30 @@ class Resizer(QGraphicsObject):
         else:
             setter(self._boundingRectPoint + delta)
 
+        self.prepareGeometryChange()
         self._rect = self._rect.normalized()
+        self._updateHandlePositions()
+
         self.resize.emit(self._rect)
 
-        self._updateHandlePositions()
-        self.update()
+    def _updateItemPosition(self, e: QGraphicsSceneMouseEvent) -> None:
+        self.prepareGeometryChange()
 
-    def _boundingRectPointFromHandle(self) -> QPointF:
+        delta = QPointF(e.scenePos() - e.lastScenePos())
+        self._rect.translate(delta)
+        self.update(self._rect)
+        self._updateHandlePositions()
+
+        self.positionChange.emit(delta)
+
+    def _boundingRectPointFromHandle(self, handle: str) -> QPointF:
 
         """
         Return the bounding rectangle corresponding point based on the
         clicked handle
         """
 
-        b = self.boundingRect()
-        handle = self._selectedHandle
+        b = self._rect
 
         if handle == "TopLeft":
             return QPointF(b.left(), b.top())
@@ -139,36 +139,35 @@ class Resizer(QGraphicsObject):
         if handle == "Bottom":
             return QPointF(b.center().x(), b.bottom())
 
-    def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
-
-        """Edit the object if the user clicked on a handle"""
-
+    def onMouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         if self._selectedHandle is not None:
-            self._performResize(e.scenePos())
+            self._updateItemSize(e)
+        elif e.buttons() & Qt.LeftButton:
+            self._updateItemPosition(e)
 
-        super().mouseMoveEvent(e)
-
-    def mousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
-
-        """Capture clicked handle"""
-
+    def onMousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         self._selectedHandle = self._handleAt(e.scenePos())
 
         if self._selectedHandle is not None:
             self._mouseOrigin = e.scenePos()
-            self._boundingRectPoint = self._boundingRectPointFromHandle()
+            self._boundingRectPoint = self._boundingRectPointFromHandle(
+                self._selectedHandle
+            )
 
-        super().mousePressEvent(e)
-
-    def mouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
+    def onMouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         self._selectedHandle = None
-
-        super().mouseReleaseEvent(e)
+        self._mouseOrigin = None
 
     def hoverMoveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
+        handle = self._handleAt(e.scenePos())
+        cursor = Qt.SizeAllCursor if handle is None else self._cursors[handle]
+        self.setCursor(cursor)
+
         super().hoverMoveEvent(e)
 
-        print("hover")
+    # def hoverLeaveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
+    #     self.setCursor(Qt.ArrowCursor)
+    #     super().hoverLeaveEvent(e)
 
     def paint(
         self,
@@ -177,17 +176,49 @@ class Resizer(QGraphicsObject):
         widget: QWidget = None,
     ) -> None:
 
-        painter.setBrush(QBrush(QColor(70, 70, 70, 100)))
-        painter.setPen(QPen(QColor(200, 200, 200, 100), 1.0, Qt.DashLine))
+        brush = QBrush(QBrush(QColor(70, 70, 70, 120)))
+        painter.setBrush(brush)
         painter.drawRect(self._rect)
 
         painter.setRenderHint(QPainter.Antialiasing)
-        painter.setBrush(QBrush(Qt.transparent))
-        painter.setPen(
-            QPen(QColor(Qt.white), 1.0, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin)
-        )
-        for handle, rect in self._handles.items():
-            painter.drawRect(rect)
+        brush.setColor(QColor(Qt.transparent))
+        painter.setBrush(brush)
+        pen = QPen(QColor(Qt.white), 0, Qt.DashLine, Qt.RoundCap, Qt.RoundJoin)
+        pen.setCosmetic(True)
+        painter.setPen(pen)
+        painter.drawRect(self._rect)
+
+        brush.setColor(QColor(Qt.white))
+        pen.setColor(QColor(0, 0, 0))
+        pen.setStyle(Qt.SolidLine)
+        painter.setPen(pen)
+        painter.setBrush(brush)
+
+        for rect in self._handles.values():
+            painter.drawEllipse(rect)
+
+        c: QPointF = self._rect.center()
+
+        cross = [
+            QLineF(c.x() - 2, c.y(), c.x() + 2, c.y()),
+            QLineF(c.x(), c.y() - 2, c.x(), c.y() + 2),
+        ]
+
+        painter.drawLines(*cross)
+
+    def boundingRect(self) -> QRectF:
+
+        """Adjust the bounding rect so that it contains the handles"""
+
+        o = self._handleSize
+        return self._rect.adjusted(-o, -o, o, o)
+
+    def shape(self) -> QPainterPath:
+        path = QPainterPath()
+        path.addRect(self._rect)
+        for shape in self._handles.values():
+            path.addRect(shape)
+        return path
 
     # def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
     #     if change == QGraphicsItem.ItemPositionChange:
