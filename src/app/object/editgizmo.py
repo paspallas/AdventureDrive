@@ -12,9 +12,7 @@ from typing import Any, Dict
 from .rectangle import Rectangle
 
 
-class Resizer(QGraphicsObject):
-
-    """Resizer handle for object edition"""
+class EditGizmo(QGraphicsObject):
 
     resize = pyqtSignal(QRectF, name="resize")
     positionChange = pyqtSignal(QPointF, name="positionChange")
@@ -29,7 +27,7 @@ class Resizer(QGraphicsObject):
         self._resizable = resizable
         self._rect: QRectF = resizable.rect()
 
-        self._handleSize = 3
+        self._handleSize = 2
 
         self._mouseOrigin: QPointF = None
         self._boundingRectPoint: QPointF = None
@@ -40,6 +38,7 @@ class Resizer(QGraphicsObject):
         self.setFlags(flags)
         self.setVisible(True)
         self.setAcceptHoverEvents(True)
+        self.setZValue(10000)
 
         """ Place the resizer gizmo over the resizable object"""
         self.setPos(self._resizable.scenePos())
@@ -85,7 +84,26 @@ class Resizer(QGraphicsObject):
         self._handles["Top"] = QRectF(b.center().x() - s / 2, b.top() - s - 0.5, s, s)
         self._handles["Bottom"] = QRectF(b.center().x() - s / 2, b.bottom() + 0.5, s, s)
 
+    def _adjustRectWarp(self, handle: str, rect: QRectF) -> QRectF:
+        lim = 0.5
+
+        if rect.width() < lim:
+            if handle in ("Left, TopLeft, BottomLeft"):
+                rect.setLeft(rect.right() - lim)
+            else:
+                rect.setRight(rect.left() + lim)
+
+        if rect.height() < lim:
+            if handle in ("Top, TopLeft, TopRight"):
+                rect.setTop(rect.bottom() - lim)
+            else:
+                rect.setBottom(rect.top() + lim)
+
+        return rect
+
     def _updateItemSize(self, e: QGraphicsSceneMouseEvent) -> None:
+        self.prepareGeometryChange()
+
         delta = QPointF(e.scenePos() - self._mouseOrigin)
         handle = self._selectedHandle
         setter = self._rect.__getattribute__("set" + handle)
@@ -97,10 +115,9 @@ class Resizer(QGraphicsObject):
         else:
             setter(self._boundingRectPoint + delta)
 
-        self.prepareGeometryChange()
-        self._rect = self._rect.normalized()
-        self._updateHandlePositions()
+        self._rect = self._adjustRectWarp(handle, self._rect)
 
+        self._updateHandlePositions()
         self.resize.emit(self._rect)
 
     def _updateItemPosition(self, e: QGraphicsSceneMouseEvent) -> None:
@@ -116,8 +133,7 @@ class Resizer(QGraphicsObject):
     def _boundingRectPointFromHandle(self, handle: str) -> QPointF:
 
         """
-        Return the bounding rectangle corresponding point based on the
-        clicked handle
+        Return the bounding rectangle corresponding point for the clicked handle
         """
 
         b = self._rect
@@ -164,10 +180,6 @@ class Resizer(QGraphicsObject):
         self.setCursor(cursor)
 
         super().hoverMoveEvent(e)
-
-    # def hoverLeaveEvent(self, e: QGraphicsSceneHoverEvent) -> None:
-    #     self.setCursor(Qt.ArrowCursor)
-    #     super().hoverLeaveEvent(e)
 
     def paint(
         self,
@@ -216,31 +228,8 @@ class Resizer(QGraphicsObject):
     def shape(self) -> QPainterPath:
         path = QPainterPath()
         path.addRect(self._rect)
+
         for shape in self._handles.values():
-            path.addRect(shape)
+            path.addEllipse(shape)
+
         return path
-
-    # def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
-    #     if change == QGraphicsItem.ItemPositionChange:
-
-    #         print("change")
-
-    #         delta: QPointF = value - self.pos()
-
-    #         """ Resize ourselves"""
-    #         self._rect = self._rect.adjusted(0, 0, delta.x(), delta.y())
-    #         self.update()
-    #         self._updateHandlePositions()
-
-    #         limit = QPointF(
-    #             self._resizable.scenePos().x(), self._resizable.scenePos().y()
-    #         )
-    #         value.setX(value.x() if value.x() > limit.x() else limit.x())
-    #         value.setY(value.y() if value.y() > limit.y() else limit.y())
-
-    #         """ resize by the delta movement"""
-    #         self.resize.emit(value - self.pos())
-
-    #         return value
-
-    #     return super().itemChange(change, value)

@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QPointF, QRectF, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QGraphicsSceneMouseEvent
 from app.object.rectangle import Rectangle
-from app.object.resizer import Resizer
+from app.object.editgizmo import EditGizmo
 from .abstracttool import AbstractTool, AbstractToolState
 from app.utils.cursordecorators import setCursor
 
@@ -11,10 +11,10 @@ class HandleResizerInteraction(AbstractToolState):
         self.tool._item.onMouseMoveEvent(e)
 
     def mousePress(self, e: QGraphicsSceneMouseEvent) -> None:
-        resizer = self.tool._scene.itemAt(
+        gizmo = self.tool._scene.itemAt(
             e.scenePos(), self.tool._scene.views()[0].transform()
         )
-        if resizer is self.tool._item:
+        if gizmo is self.tool._item:
             self.tool._item.onMousePressEvent(e)
 
     def mouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
@@ -31,7 +31,7 @@ class SelectEditableObject(AbstractToolState):
         )
 
         if isinstance(selected, Rectangle):
-            self.tool._item = Resizer(resizable=selected)
+            self.tool._item = EditGizmo(resizable=selected)
             self.tool._item.setSelected(True)
             self.tool._scene.addItem(self._tool._item)
             self.tool.transition(HandleResizerInteraction())
