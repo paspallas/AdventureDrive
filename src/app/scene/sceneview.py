@@ -31,9 +31,9 @@ kZoomMin = 0.5
 class SceneView(QGraphicsView):
     def __init__(
         self,
+        background: QPixmap = None,
         parent: QWidget = None,
         scene: QGraphicsScene = None,
-        background: QPixmap = None,
     ):
         super().__init__(parent)
 
@@ -44,9 +44,6 @@ class SceneView(QGraphicsView):
         self._setupUi()
         self.setMouseTracking(True)
         self._notifyZoomChange(1)
-
-        if background:
-            self.setBackgroundImage(background)
 
     def _setupUi(self) -> None:
         self.setFrameStyle(QFrame.NoFrame)
@@ -75,9 +72,15 @@ class SceneView(QGraphicsView):
         self._background.setFlag(QGraphicsItem.ItemIsSelectable, False)
         self._scene.addItem(self._background)
 
-        # adjust the scene rect size to the background image rect
-        rect = self._background.boundingRect()
-        self._scene.setSceneRect(rect.x(), rect.y(), rect.width(), rect.height())
+        # Add extra space around the scene background. This gives the user a more pleasant
+        # navigation experience
+
+        extraPx = 480
+        rect = self._background.boundingRect().adjusted(
+            -extraPx, -extraPx / 2, extraPx, extraPx / 2
+        )
+
+        self._scene.setSceneRect(rect)
         self.fitInView(self._background, Qt.KeepAspectRatio)
 
     def _enableViewPortPan(self, e: QMouseEvent) -> None:
@@ -169,7 +172,10 @@ class SceneView(QGraphicsView):
         super().mouseMoveEvent(e)
 
     def resizeEvent(self, e: QResizeEvent) -> None:
-        self.fitInView(self._background, Qt.KeepAspectRatio)
+        if self._scene.focusedItem is not None:
+            self.fitInView(self._scene.focusedItem, Qt.KeepAspectRatio)
+        else:
+            self.fitInView(self._background, Qt.KeepAspectRatio)
 
     @pyqtSlot()
     def resetZoomLevel(self) -> None:

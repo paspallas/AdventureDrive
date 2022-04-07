@@ -193,14 +193,16 @@ class EditGizmo(QGraphicsObject):
         widget: QWidget = None,
     ) -> None:
 
+        pen = QPen(QColor(Qt.white), 0, Qt.DashLine, Qt.RoundCap, Qt.RoundJoin)
         brush = QBrush(QBrush(QColor(70, 70, 70, 120)))
+        painter.setPen(pen)
         painter.setBrush(brush)
         painter.drawRect(self._rect)
 
         painter.setRenderHint(QPainter.Antialiasing)
         brush.setColor(QColor(Qt.transparent))
         painter.setBrush(brush)
-        pen = QPen(QColor(Qt.white), 0, Qt.DashLine, Qt.RoundCap, Qt.RoundJoin)
+        pen.setColor(QColor(Qt.white))
         pen.setCosmetic(True)
         painter.setPen(pen)
         painter.drawRect(self._rect)
