@@ -20,12 +20,12 @@ class EditGizmo(QGraphicsObject):
     def __init__(
         self,
         parent: QWidget = None,
-        resizable: Rectangle = None,
+        editable: Rectangle = None,
     ):
         super().__init__(parent)
 
-        self._resizable = resizable
-        self._rect: QRectF = resizable.rect()
+        self._editable = editable
+        self._rect: QRectF = editable.rect()
 
         self._handleSize = 2
 
@@ -45,13 +45,13 @@ class EditGizmo(QGraphicsObject):
         self.setAcceptHoverEvents(True)
         self.setZValue(10000)
 
-        """ Place the resizer gizmo over the resizable object"""
-        self.setPos(self._resizable.scenePos())
+        """ Place the resizer gizmo over the editable object"""
+        self.setPos(self._editable.scenePos())
         self._updateHandlePositions()
 
-        """ Manipulate resizable object """
-        self.resize.connect(lambda change: self._resizable.resize(change))
-        self.positionChange.connect(lambda change: self._resizable.position(change))
+        """ Manipulate editable object """
+        self.resize.connect(lambda change: self._editable.resize(change))
+        self.positionChange.connect(lambda change: self._editable.position(change))
 
         self._cursors = {
             "TopLeft": Qt.SizeFDiagCursor,

@@ -52,16 +52,6 @@ class SceneModel(QGraphicsScene):
         except AttributeError as e:
             print(f"Tool class file not found: {e}")
 
-    @pyqtSlot(bool)
-    def setItemsInteractivity(self, val: bool = False):
-        for item in self.items():
-            if isinstance(item, QGraphicsPixmapItem):
-                """The background is always static"""
-                continue
-
-            item.setFlag(QGraphicsItem.ItemIsMovable, val)
-            item.setFlag(QGraphicsItem.ItemIsSelectable, val)
-
     def drawForeground(self, painter: QPainter, rect: QRectF) -> None:
         super().drawForeground(painter, rect)
 

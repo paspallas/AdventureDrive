@@ -52,11 +52,6 @@ class SceneEditor(QMainWindow):
         self._edit.triggered.connect(lambda: self._scene.setTool("EditObjectTool"))
         self._edit.setCheckable(True)
 
-        self._select = QAction("Select object", self)
-        self._select.setToolTip("Select an object")
-        self._select.triggered.connect(lambda: self._scene.setTool("SelectTool"))
-        self._select.setCheckable(True)
-
         self._delete = QAction("Delete object", self)
         self._delete.setToolTip("Delete and object")
         self._delete.triggered.connect(lambda: self._scene.setTool("DeleteObjectTool"))
@@ -64,13 +59,11 @@ class SceneEditor(QMainWindow):
 
         self._toolbar.addAction(self._hotspot)
         self._toolbar.addAction(self._edit)
-        self._toolbar.addAction(self._select)
         self._toolbar.addAction(self._delete)
 
         group = QActionGroup(self)
         group.addAction(self._hotspot)
         group.addAction(self._edit)
-        group.addAction(self._select)
         group.addAction(self._delete)
 
     # TODO this implementation lacks robustness
@@ -105,6 +98,3 @@ class SceneEditor(QMainWindow):
                     )
                     item.deserialize(line)
                     self._scene.addItem(item)
-
-            """ set items not interactable by default"""
-            # self._scene.setItemsInteractivity(False)

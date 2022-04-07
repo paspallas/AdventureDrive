@@ -87,14 +87,19 @@ class Rectangle(QGraphicsRectItem, Serializable):
         )
 
     def serialize(self) -> str:
+
+        """Save all coordinates as integers"""
+        pos = self.pos().toPoint()
+        rect = self.rect().toAlignedRect()
+
         return ",".join(
             map(
                 lambda item: str(item),
                 [
-                    self.pos().x(),
-                    self.pos().y(),
-                    self.rect().width(),
-                    self.rect().height(),
+                    pos.x(),
+                    pos.y(),
+                    rect.width(),
+                    rect.height(),
                 ],
             )
         )

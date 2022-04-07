@@ -27,6 +27,7 @@ class EditObjectTool(AbstractTool):
         """Get top most item at mouse click position"""
         selected = self._scene.itemAt(e.scenePos(), self._scene.views()[0].transform())
 
+        """ Never select the background image """
         if selected is None or isinstance(selected, QGraphicsPixmapItem):
             if self._item is not None:
                 self._scene.removeItem(self._item)
@@ -37,7 +38,7 @@ class EditObjectTool(AbstractTool):
 
                 """No previous rectangle being edited"""
 
-                self._item = EditGizmo(resizable=selected)
+                self._item = EditGizmo(editable=selected)
                 self._item.setSelected(True)
                 self._scene.addItem(self._item)
 
@@ -47,7 +48,7 @@ class EditObjectTool(AbstractTool):
 
                 self._scene.removeItem(self._item)
                 self._item = None
-                self._item = EditGizmo(resizable=selected)
+                self._item = EditGizmo(editable=selected)
                 self._item.setSelected(True)
                 self._scene.addItem(self._item)
 
