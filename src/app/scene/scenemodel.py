@@ -18,14 +18,16 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QPainter, QPen, QColor
 from app.tool.abstracttool import AbstractTool
+from app.object.background import Grid
 from importlib import import_module as imodule
+from typing import Any
 
 
 class SceneModel(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.focusedItem: QGraphicsItem = None
+        self._focusedItem: QGraphicsItem = None
         self._currentTool: AbstractTool = None
         self._setupUi()
 
@@ -50,7 +52,10 @@ class SceneModel(QGraphicsScene):
     def mouseDoubleClickEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         super().mouseDoubleClickEvent(e)
 
-        """ Center the double clicked item in the view"""
+        """ Center the double clicked item in the view.
+            If no item was selected, zoom out to fit the entire scene
+            in the viewport.
+        """
 
         view: QGraphicsView = self.views()[0]
         item: QGraphicsItem = self.itemAt(
@@ -58,8 +63,8 @@ class SceneModel(QGraphicsScene):
         )
 
         if item is not None:
-            if self.focusedItem != item:
-                self.focusedItem = item
+            if self._focusedItem != item:
+                self._focusedItem = item
                 self._smoothFocusOnItem(item, view)
 
     def _smoothFocusOnItem(self, item: QGraphicsItem, view: QGraphicsView) -> None:
@@ -69,11 +74,28 @@ class SceneModel(QGraphicsScene):
         self.animator.setStartValue(
             view.mapToScene(view.viewport().rect()).boundingRect()
         )
-        self.animator.setEndValue(item.mapRectToScene(item.boundingRect()))
+
+        self.animator.setEndValue(self.getFocusedItemRect())
         self.animator.valueChanged.connect(
             lambda x: view.fitInView(x, Qt.KeepAspectRatio)
         )
         self.animator.start()
+
+    def getFocusedItemRect(self) -> Any:
+        item = self._focusedItem
+        rect: QRectF = None
+        offset = 15
+
+        if item is not None:
+            if isinstance(item, Grid):
+                rect = item.boundingRect()
+            else:
+                rect = item.boundingRect().adjusted(-offset, -offset, offset, offset)
+            return item.mapRectToScene(rect)
+        return None
+
+    def setFocusedItem(self, item: QGraphicsItem) -> None:
+        self._focusedItem = item
 
     @pyqtSlot(str)
     def setTool(self, tool: str) -> None:
@@ -87,28 +109,3 @@ class SceneModel(QGraphicsScene):
             self._currentTool.enable()
         except AttributeError as e:
             print(f"Tool class file not found: {e}")
-
-    def drawForeground(self, painter: QPainter, rect: QRectF) -> None:
-        super().drawForeground(painter, rect)
-
-        fineGridSize = 16
-
-        left = int(rect.left())
-        right = int(rect.right())
-        top = int(rect.top())
-        bottom = int(rect.bottom())
-
-        first_l = left - (left % fineGridSize)
-        first_t = top - (top % fineGridSize)
-
-        fine = []
-
-        for x in range(first_l, right, fineGridSize):
-            fine.append(QLineF(x, top, x, bottom))
-
-        for y in range(first_t, bottom, fineGridSize):
-            fine.append(QLineF(left, y, right, y))
-
-        pen = QPen(QColor("#292929"), 0, Qt.DotLine)
-        painter.setPen(pen)
-        painter.drawLines(*fine)

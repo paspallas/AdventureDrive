@@ -24,16 +24,6 @@ class SceneEditor(QMainWindow):
         self._setupUi()
         self._setupToolBar()
 
-        # TODO test
-        self._sprite = Sprite()
-        self._sprite.setPixmap(
-            QPixmap("F:/devel/sega/berlin/AdventureDrive/serpiente.PNG").copy(
-                8, 10, 42, 61
-            )
-        )
-        self._sprite.setPos(10, 10)
-        self._scene.addItem(self._sprite)
-
     def _setupUi(self):
         self._scene: QGraphicsScene = SceneModel()
         self._view: QGraphicsView = SceneView(scene=self._scene, parent=self)
@@ -70,6 +60,15 @@ class SceneEditor(QMainWindow):
     def setBackgroundImage(self, path: str) -> None:
         self._backgroundpath = path
         self._view.setBackgroundImage(QPixmap(path))
+
+        self._sprite = Sprite()
+        self._sprite.setPixmap(
+            QPixmap("F:/devel/sega/berlin/AdventureDrive/serpiente.PNG").copy(
+                8, 10, 42, 61
+            )
+        )
+        self._sprite.setPos(10, 10)
+        self._scene.addItem(self._sprite)
 
     # TODO implement proper per object serialization
     def serialize(self, path: str) -> None:

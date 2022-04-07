@@ -1,7 +1,6 @@
 RM  := rm -rf
 RC  := pyrcc5
 NSI := makensis
-PYI := pyinstaller
 PY 	:= python3.9
 
 .PHONY:
@@ -10,7 +9,7 @@ test:
 
 .PHONY:
 app:
-	@$(PYI) app.spec
+	@$(PY) -m pyinstaller app.spec
 #	@$(NSI) installer.nsi
 
 .PHONY:

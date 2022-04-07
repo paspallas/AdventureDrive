@@ -17,6 +17,8 @@ class EditGizmo(QGraphicsObject):
     resize = pyqtSignal(QRectF, name="resize")
     positionChange = pyqtSignal(QPointF, name="positionChange")
 
+    HANDLE_SIZE = 1
+
     def __init__(
         self,
         parent: QWidget = None,
@@ -26,8 +28,6 @@ class EditGizmo(QGraphicsObject):
 
         self._editable = editable
         self._rect: QRectF = editable.rect()
-
-        self._handleSize = 2
 
         self._mouseOrigin: QPointF = None
         self._boundingRectPoint: QPointF = None
@@ -76,7 +76,7 @@ class EditGizmo(QGraphicsObject):
         return None
 
     def _updateHandlePositions(self):
-        s = self._handleSize
+        s = self.HANDLE_SIZE
         b = self._rect
 
         """ Center the handles in the corners of the bounding rect """
@@ -229,7 +229,7 @@ class EditGizmo(QGraphicsObject):
 
         """Adjust the bounding rect so that it contains the handles"""
 
-        o = self._handleSize
+        o = self.HANDLE_SIZE
         return self._rect.adjusted(-o, -o, o, o)
 
     def shape(self) -> QPainterPath:
