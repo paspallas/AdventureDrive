@@ -25,19 +25,19 @@ class SceneModel(QGraphicsScene):
         self.setBackgroundBrush(QColor("#362F4F"))
 
     def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
+        super().mouseMoveEvent(e)
         if self._currentTool:
             self._currentTool.onMouseMove(e)
-        super().mouseMoveEvent(e)
 
     def mousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
+        super().mousePressEvent(e)
         if self._currentTool:
             self._currentTool.onMousePress(e)
-        super().mousePressEvent(e)
 
     def mouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
+        super().mouseReleaseEvent(e)
         if self._currentTool:
             self._currentTool.onMouseRelease(e)
-        super().mouseReleaseEvent(e)
 
     @pyqtSlot(str)
     def setTool(self, tool: str) -> None:

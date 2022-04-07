@@ -25,7 +25,6 @@ class Rectangle(QGraphicsRectItem, Serializable):
         self.setPos(position)
         flags = (
             QGraphicsItem.ItemIsSelectable
-            | QGraphicsItem.ItemIsMovable
             | QGraphicsItem.ItemIsFocusable
             | QGraphicsItem.ItemSendsGeometryChanges
             | QGraphicsItem.ItemSendsScenePositionChanges

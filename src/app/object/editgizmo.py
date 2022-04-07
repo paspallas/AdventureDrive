@@ -34,7 +34,12 @@ class EditGizmo(QGraphicsObject):
         self._selectedHandle: str = None
         self._handles: Dict[str, QRectF] = {}
 
-        flags = QGraphicsItem.ItemSendsGeometryChanges | QGraphicsItem.ItemIsFocusable
+        flags = (
+            QGraphicsItem.ItemSendsGeometryChanges
+            | QGraphicsItem.ItemIsFocusable
+            | QGraphicsItem.ItemIsSelectable
+            | QGraphicsItem.ItemIsMovable
+        )
         self.setFlags(flags)
         self.setVisible(True)
         self.setAcceptHoverEvents(True)
@@ -155,13 +160,13 @@ class EditGizmo(QGraphicsObject):
         if handle == "Bottom":
             return QPointF(b.center().x(), b.bottom())
 
-    def onMouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
+    def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         if self._selectedHandle is not None:
             self._updateItemSize(e)
         elif e.buttons() & Qt.LeftButton:
             self._updateItemPosition(e)
 
-    def onMousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
+    def mousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         self._selectedHandle = self._handleAt(e.scenePos())
 
         if self._selectedHandle is not None:
@@ -170,7 +175,7 @@ class EditGizmo(QGraphicsObject):
                 self._selectedHandle
             )
 
-    def onMouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
+    def mouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         self._selectedHandle = None
         self._mouseOrigin = None
 

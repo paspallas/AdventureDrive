@@ -49,7 +49,7 @@ class SceneEditor(QMainWindow):
 
         self._edit = QAction("Edit object", self)
         self._edit.setToolTip("Edit an object")
-        self._edit.triggered.connect(lambda: self._scene.setTool("EditHotSpotTool"))
+        self._edit.triggered.connect(lambda: self._scene.setTool("EditObjectTool"))
         self._edit.setCheckable(True)
 
         self._select = QAction("Select object", self)
@@ -107,4 +107,4 @@ class SceneEditor(QMainWindow):
                     self._scene.addItem(item)
 
             """ set items not interactable by default"""
-            self._scene.setItemsInteractivity(False)
+            # self._scene.setItemsInteractivity(False)
