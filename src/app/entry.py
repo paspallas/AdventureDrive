@@ -1,6 +1,9 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QStyleFactory
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
+import qtmodern.styles
+import qtmodern.windows
+
 from app.ui.mainwindow import MainWindow
 from app.utils.settings import SettingsManager
 import sys
@@ -42,6 +45,9 @@ def start() -> None:
 
     app = QApplication([])
     window = MainWindow()
-    window.show()
+
+    qtmodern.styles.dark(app)
+    mw = qtmodern.windows.ModernWindow(window)
+    mw.show()
 
     sys.exit(app.exec())

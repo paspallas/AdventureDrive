@@ -1,29 +1,9 @@
-# (c) Teigigutesiegel, 2021
-# used code from https://gist.github.com/sjdv1982/75899d10e6983b878f63083e3c47b39b, copyright (c) 2017 Sjoerd de Vries
-
-"""
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-"""
-
-from PyQt5.QtWidgets import QWidget, QSlider, QHBoxLayout, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QSlider, QHBoxLayout, QSizePolicy, QLabel
 from PyQt5.QtCore import Qt, QRect, QPointF, QLineF, pyqtSignal
 from PyQt5.QtGui import (
     QColor,
     QPainter,
+    QPen,
     QPaintEvent,
     QResizeEvent,
     QConicalGradient,
@@ -43,6 +23,8 @@ class ColorCircle(QWidget):
         self.selected_color = QColor(
             startupcolor[0], startupcolor[1], startupcolor[2], 1
         )
+        # self.selected_color = QColor(QColor.fromRgba(hex("#FFFFFF"))
+
         self.x = 0.5
         self.y = 0.5
         self.h = self.selected_color.hueF()
@@ -62,7 +44,10 @@ class ColorCircle(QWidget):
 
     def paintEvent(self, ev: QPaintEvent) -> None:
         center = QPointF(self.width() / 2, self.height() / 2)
+
         p = QPainter(self)
+        p.setRenderHint(QPainter.Antialiasing)
+
         p.setViewport(
             self.margin,
             self.margin,
@@ -84,11 +69,17 @@ class ColorCircle(QWidget):
         p.setBrush(val_grad)
         p.drawEllipse(self.square)
 
-        p.setPen(Qt.black)
-        p.setBrush(self.selected_color)
+        pen = QPen(Qt.black, 3, Qt.SolidLine)
+        p.setPen(pen)
+        p.setBrush(Qt.transparent)
+
         line = QLineF.fromPolar(self.radius * self.s, 360 * self.h + 90)
         line.translate(self.rect().center())
         p.drawEllipse(line.p2(), 10, 10)
+        pen.setWidth(2)
+        pen.setColor(QColor("#F0F0F0"))
+        p.setPen(pen)
+        p.drawRect(line.p2().x() - 4, line.p2().y() - 4, 8, 8)
 
     def recalc(self) -> None:
         self.selected_color.setHsvF(self.h, self.s, self.v)
@@ -175,6 +166,7 @@ class ColorCircleDialog(QWidget):
         fader.setValue(511)
         fader.valueChanged.connect(lambda x: wid.setValue(x / 511))
         mainlay.addWidget(fader)
+        mainlay.addWidget(color)
 
         self.setLayout(mainlay)
 
@@ -189,3 +181,9 @@ if __name__ == "__main__":
     window.currentColorChanged.connect(lambda x: print(x.red(), x.green(), x.blue()))
     window.show()
     sys.exit(app.exec_())
+
+        # sBox.setColorAt(0.0, QColor.fromHsv(color.hue(), 0, 127, 255))
+        # sBox.setColorAt(1.0, QColor.fromHsv(color.hue(), 255, 255, 255))
+
+        # vBox.setColorAt(0.0, QColor.fromRgb(0, 0, 0, 255))
+        # vBox.setColorAt(1.0, QColor.fromRgb(0, 0, 0, 0))

@@ -1,6 +1,5 @@
 RM  := rm -rf
 RC  := pyrcc5
-NSI := makensis
 PY 	:= python3.9
 
 .PHONY:
@@ -9,19 +8,17 @@ test:
 
 .PHONY:
 app:
-	@$(PY) -m pyinstaller app.spec
-#	@$(NSI) installer.nsi
+	@pyinstaller main.spec
+#	@makensis installer.nsi
 
 .PHONY:
 clean:
-	@$(RM) __pycache__ *.ini
+	@$(RM) __pycache__ *.ini src/app/resources.py
 
 .PHONY:
 distclean: clean
 	@$(RM) dist build
 
 .PHONY:
-res: src/app/resources.py
-
-src/app/resources.py: resources/resources.qrc
-	@$(RC) -no-compress $< -o $@
+res:
+	@$(RC) -no-compress resources/resources.qrc -o src/app/resources.py 

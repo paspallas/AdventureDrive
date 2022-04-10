@@ -1,6 +1,6 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
-    <qresource prefix="icons">
-        <file alias="leftbottom.ico">icons/size_fdiag.png</file>
+    <qresource prefix="cursor">
+        <file alias="picker">cursors/color-picker.png</file>
     </qresource>
 </RCC>
