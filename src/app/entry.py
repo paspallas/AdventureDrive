@@ -39,15 +39,16 @@ def start() -> None:
     configureLogging()
     logging.getLogger().info("Start application")
 
-    QApplication.setStyle(QStyleFactory.create("fusion"))
+    QApplication.setStyle(QStyleFactory.create("Fusion"))
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     SettingsManager("addrive.ini")
 
     app = QApplication([])
-    window = MainWindow()
-
     qtmodern.styles.dark(app)
-    mw = qtmodern.windows.ModernWindow(window)
-    mw.show()
+    window = MainWindow()
+    window.show()
+
+    # mw = qtmodern.windows.ModernWindow(window)
+    # mw.show()
 
     sys.exit(app.exec())

@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # self.setWindowTitle("Adventure Drive")
+        self.setWindowTitle("Adventure Drive")
         self._setupUi()
         self.setStatusBar(StatusBar().bar)
         SettingsManager().read(self)

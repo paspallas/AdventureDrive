@@ -3,15 +3,13 @@ from PyQt5.QtCore import QFileInfo
 
 
 class FileIOControl(QFileDialog):
-    def __init__(self, nativeLook: bool = True):
+    def __init__(self):
         super().__init__()
 
         self.path = None
         self.filename = None
         self.options = self.Options()
-
-        if not nativeLook:
-            self.options |= self.DontUseNativeDialog
+        self.options |= self.DontUseNativeDialog
 
     def openFile(self, fileFilter: str) -> (str, str):
         self.path, _ = self.getOpenFileName(

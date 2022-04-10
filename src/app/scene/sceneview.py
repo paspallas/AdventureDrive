@@ -25,7 +25,7 @@ from .scenemodel import SceneModel
 from app.object.background import BackGround
 
 kZoomFactor = 1.2
-kZoomMax = 30
+kZoomMax = 40
 kZoomMin = 0.5
 
 

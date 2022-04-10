@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
     QGraphicsSceneHoverEvent,
 )
 from PyQt5.QtGui import QPainter, QPainterPath, QPen, QColor, QBrush
-from PyQt5.QtCore import Qt, QRectF, QLineF, QPointF, pyqtSignal
+from PyQt5.QtCore import Qt, QRectF, QLineF, QPointF, QTimer, pyqtSignal
 from typing import Any, Dict
 from .rectangle import Rectangle
 
@@ -44,6 +44,13 @@ class EditGizmo(QGraphicsObject):
         self.setVisible(True)
         self.setAcceptHoverEvents(True)
         self.setZValue(10000)
+
+        """ Dash line animation """
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self._updateDashLineAnimation)
+        self.timer.setInterval(160)
+        self.timer.start()
+        self.dashOffset = 0.0
 
         """ Place the resizer gizmo over the editable object"""
         self.setPos(self._editable.scenePos())
@@ -193,17 +200,20 @@ class EditGizmo(QGraphicsObject):
         widget: QWidget = None,
     ) -> None:
 
-        pen = QPen(QColor(Qt.white), 0, Qt.DashLine, Qt.RoundCap, Qt.RoundJoin)
-        brush = QBrush(QBrush(QColor(70, 70, 70, 120)))
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        pen = QPen(QColor(Qt.transparent), 0, Qt.DashLine, Qt.RoundCap, Qt.RoundJoin)
+        brush = QBrush(QBrush(QColor(70, 70, 70, 180)))
+
         painter.setPen(pen)
         painter.setBrush(brush)
         painter.drawRect(self._rect)
 
-        painter.setRenderHint(QPainter.Antialiasing)
         brush.setColor(QColor(Qt.transparent))
         painter.setBrush(brush)
-        pen.setColor(QColor(Qt.white))
-        pen.setCosmetic(True)
+
+        pen.setBrush(Qt.white)
+        pen.setDashOffset(self.dashOffset)
         painter.setPen(pen)
         painter.drawRect(self._rect)
 
@@ -224,6 +234,10 @@ class EditGizmo(QGraphicsObject):
         ]
 
         painter.drawLines(*cross)
+
+    def _updateDashLineAnimation(self) -> None:
+        self.dashOffset -= 1
+        self.update()
 
     def boundingRect(self) -> QRectF:
 
