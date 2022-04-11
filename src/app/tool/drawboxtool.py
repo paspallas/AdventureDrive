@@ -4,27 +4,62 @@ from PyQt5.QtWidgets import (
     QGraphicsItem,
     QGraphicsLineItem,
     QGraphicsSceneMouseEvent,
+    QWidget,
 )
-from PyQt5.QtGui import QCursor, QPen
+from PyQt5.QtGui import QCursor, QPen, QPainter
 from app.object.rectangle import Rectangle
 from app.utils.cursordecorators import *
 from .abstracttool import AbstractTool, AbstractToolState
 
 
-class ShowHintRectangle(AbstractToolState):
+class CrossHair(QGraphicsItem):
+    def __init__(self, scene: QGraphicsScene = None, parent: QWidget = None):
+        super().__init__(parent)
+
+        self.setFlag(QGraphicsItem.ItemIsSelectable, False)
+
+        self._r = scene.views()[0].background.boundingRect()
+        self._pos = QPointF(0, 0)
+
+    def setPos(self, point: QPointF) -> None:
+        self._pos.setX(point.x())
+        self._pos.setY(point.y())
+
+        # Do not call the superclass method to avoid moving the origin coordinate
+        # implicitly call update trigger a paint event
+        self.update()
+
+    def boundingRect(self) -> QRectF:
+        return self._r
+
+    def paint(
+        self,
+        painter: QPainter,
+        option,
+        widget: QWidget = None,
+    ) -> None:
+
+        pen = QPen(Qt.white, 0, Qt.DashLine)
+        painter.setPen(pen)
+
+        painter.drawLine(self._r.left(), self._pos.y(), self._r.right(), self._pos.y())
+        painter.drawLine(self._pos.x(), self._r.top(), self._pos.x(), self._r.bottom())
+
+
+class CaptureRectOrigin(AbstractToolState):
     def mouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
-        # self.tool._item.setPos(e.scenePos())
 
     def mousePress(self, e: QGraphicsSceneMouseEvent) -> None:
         self.tool._origin = e.scenePos()
-        self.tool.transition(PerformDraw())
+        self.tool.createRect(e.scenePos())
+        self.tool.transition(DrawRect())
 
     def mouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         pass
 
 
-class PerformDraw(AbstractToolState):
+class DrawRect(AbstractToolState):
     def mouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
         sizex, sizey = (
             e.scenePos().x() - self.tool._origin.x(),
@@ -41,51 +76,30 @@ class PerformDraw(AbstractToolState):
         self.tool._item = None
         self.tool._origin = None
 
-        self.tool.transition(ShowHintRectangle())
-        self.tool.createHintRect()
+        self.tool.transition(CaptureRectOrigin())
 
 
-@setCursor
 class DrawBoxTool(AbstractTool):
     def __init__(self, scene: QGraphicsScene = None):
         super().__init__(scene=scene)
 
         self._origin: QPointF = None
-        self._crossh = QGraphicsLineItem(
-            self._scene.views()[0].rect().left(),
-            0,
-            self._scene.views()[0].rect().right(),
-            0,
-        )
-        self._crossv = QGraphicsLineItem(
-            0,
-            self._scene.views()[0].rect().top(),
-            0,
-            self._scene.views()[0].rect().bottom(),
-        )
-        self._crossh.setPen(QPen(Qt.white, 1, Qt.DotLine))
-        self._crossv.setPen(QPen(Qt.white, 1, Qt.DotLine))
+        self._crossHair = CrossHair(scene=scene)
+        self._scene.addItem(self._crossHair)
 
-        self._scene.addItem(self._crossh)
-        self._scene.addItem(self._crossv)
-
-    def createHintRect(self) -> None:
-        hintsize = 16
-        self._item = Rectangle(
-            position=QPointF(0, 0), rect=QRectF(0, 0, hintsize, hintsize)
-        )
+    def createRect(self, point: QPointF) -> None:
+        self._item = Rectangle(position=point, rect=QRectF(0, 0, 0, 0))
         self._scene.addItem(self._item)
 
     def enable(self) -> None:
-        self.transition(ShowHintRectangle())
-        # self.createHintRect()
+        self.transition(CaptureRectOrigin())
 
     def disable(self) -> None:
         super().disable()
+        self._scene.removeItem(self._crossHair)
 
     def onMouseMove(self, e: QGraphicsSceneMouseEvent) -> None:
-        self._crossh.setPos(self._crossh.pos().x(), e.scenePos().y())
-        self._crossv.setPos(e.scenePos().x(), self._crossv.pos().y())
+        self._crossHair.setPos(e.scenePos())
         self._state.mouseMove(e)
 
     def onMousePress(self, e: QGraphicsSceneMouseEvent) -> None:

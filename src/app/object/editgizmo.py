@@ -17,7 +17,7 @@ class EditGizmo(QGraphicsObject):
     resize = pyqtSignal(QRectF, name="resize")
     positionChange = pyqtSignal(QPointF, name="positionChange")
 
-    HANDLE_SIZE = 1
+    HANDLE_SIZE = 1.5
 
     def __init__(
         self,
@@ -48,7 +48,7 @@ class EditGizmo(QGraphicsObject):
         """ Dash line animation """
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._updateDashLineAnimation)
-        self.timer.setInterval(160)
+        self.timer.setInterval(120)
         self.timer.start()
         self.dashOffset = 0.0
 
@@ -167,6 +167,10 @@ class EditGizmo(QGraphicsObject):
         if handle == "Bottom":
             return QPointF(b.center().x(), b.bottom())
 
+    def _updateDashLineAnimation(self) -> None:
+        self.dashOffset -= 1
+        self.update()
+
     def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         if self._selectedHandle is not None:
             self._updateItemSize(e)
@@ -234,10 +238,6 @@ class EditGizmo(QGraphicsObject):
         ]
 
         painter.drawLines(*cross)
-
-    def _updateDashLineAnimation(self) -> None:
-        self.dashOffset -= 1
-        self.update()
 
     def boundingRect(self) -> QRectF:
 

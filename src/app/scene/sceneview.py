@@ -39,7 +39,7 @@ class SceneView(QGraphicsView):
         super().__init__(parent)
 
         self.setScene(scene)
-        self._background = BackGround()
+        self.background = BackGround()
 
         self._setupUi()
         self.setMouseTracking(True)
@@ -55,33 +55,22 @@ class SceneView(QGraphicsView):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setCacheMode(QGraphicsView.CacheBackground)
 
-        # fmt = QSurfaceFormat()
-        # fmt.setSamples(1)
-        # gl = QOpenGLWidget()
-        # gl.setFormat(fmt)
-        # self.setViewport(gl)
-        # self.setRenderHints(
-        #     QPainter.Antialiasing
-        #     | QPainter.TextAntialiasing
-        #     | QPainter.SmoothPixmapTransform
-        # )
-
     def setBackgroundImage(self, pixmap: QPixmap) -> None:
-        self._background.setPixmap(pixmap)
-        self.scene().addItem(self._background)
-        self._background.enableGrid()
-        self.scene().setFocusedItem(self._background.grid)
+        self.background.setPixmap(pixmap)
+        self.scene().addItem(self.background)
+        self.background.enableGrid()
+        self.scene().setFocusedItem(self.background.grid)
 
         # Add extra space around the scene background. This gives the user a more pleasant
         # navigation experience
 
         extraPx = 480
-        rect = self._background.boundingRect().adjusted(
+        rect = self.background.boundingRect().adjusted(
             -extraPx, -extraPx / 2, extraPx, extraPx / 2
         )
 
         self.scene().setSceneRect(rect)
-        self.fitInView(self._background, Qt.KeepAspectRatio)
+        self.fitInView(self.background, Qt.KeepAspectRatio)
 
     def _enableViewPortPan(self, e: QMouseEvent) -> None:
         """by default QGraphicsView uses the left mouse button to perform panning
@@ -184,3 +173,16 @@ class SceneView(QGraphicsView):
         self.resetTransform()
         self.update()
         self._notifyZoomChange(1)
+
+    @pyqtSlot()
+    def enableOpenGL():
+        fmt = QSurfaceFormat()
+        fmt.setSamples(2)
+        gl = QOpenGLWidget()
+        gl.setFormat(fmt)
+        self.setViewport(gl)
+        self.setRenderHints(
+            QPainter.Antialiasing
+            | QPainter.TextAntialiasing
+            | QPainter.SmoothPixmapTransform
+        )
