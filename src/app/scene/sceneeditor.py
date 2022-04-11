@@ -10,11 +10,12 @@ from PyQt5.QtWidgets import (
     QGraphicsPixmapItem,
 )
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QFileInfo, QRectF, QPointF
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QIcon
 from app.object.rectangle import Rectangle
 from app.object.sprite import Sprite
 from .sceneview import SceneView
 from .scenemodel import SceneModel
+import app.resources
 
 
 class SceneEditor(QMainWindow):
@@ -32,17 +33,17 @@ class SceneEditor(QMainWindow):
     def _setupToolBar(self):
         self._toolbar = self.addToolBar("tool")
 
-        self._hotspot = QAction("Draw Hotspot", self)
+        self._hotspot = QAction(QIcon(":/icon/pencil"), "Draw Hotspot", self)
         self._hotspot.setToolTip("Draw a box defining a hotspot")
         self._hotspot.triggered.connect(lambda: self._scene.setTool("DrawBoxTool"))
         self._hotspot.setCheckable(True)
 
-        self._edit = QAction("Edit object", self)
+        self._edit = QAction(QIcon(":/icon/selection"), "Edit object", self)
         self._edit.setToolTip("Edit an object")
         self._edit.triggered.connect(lambda: self._scene.setTool("EditObjectTool"))
         self._edit.setCheckable(True)
 
-        self._delete = QAction("Delete object", self)
+        self._delete = QAction(QIcon(":/icon/eraser"), "Delete object", self)
         self._delete.setToolTip("Delete and object")
         self._delete.triggered.connect(lambda: self._scene.setTool("DeleteObjectTool"))
         self._delete.setCheckable(True)

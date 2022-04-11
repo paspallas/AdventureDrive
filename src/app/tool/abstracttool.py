@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import (
     QGraphicsSceneMouseEvent,
 )
 from abc import ABC, ABCMeta, abstractmethod
-from app.utils.cursordecorators import defaultCursor
 
 
 class AbstractTool:

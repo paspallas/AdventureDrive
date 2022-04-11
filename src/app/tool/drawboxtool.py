@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QCursor, QPen, QPainter
 from app.object.rectangle import Rectangle
-from app.utils.cursordecorators import *
+from app.utils.cursor import setCursor
 from .abstracttool import AbstractTool, AbstractToolState
 
 
@@ -26,7 +26,7 @@ class CrossHair(QGraphicsItem):
         self._pos.setY(point.y())
 
         # Do not call the superclass method to avoid moving the origin coordinate
-        # implicitly call update trigger a paint event
+        # implicitly call update to trigger a paint event
         self.update()
 
     def boundingRect(self) -> QRectF:
@@ -39,11 +39,15 @@ class CrossHair(QGraphicsItem):
         widget: QWidget = None,
     ) -> None:
 
-        pen = QPen(Qt.white, 0, Qt.DashLine)
-        painter.setPen(pen)
+        p1 = QPointF(self._r.left(), self._pos.y())
+        p2 = QPointF(self._r.right(), self._pos.y())
+        p3 = QPointF(self._pos.x(), self._r.top())
+        p4 = QPointF(self._pos.x(), self._r.bottom())
 
-        painter.drawLine(self._r.left(), self._pos.y(), self._r.right(), self._pos.y())
-        painter.drawLine(self._pos.x(), self._r.top(), self._pos.x(), self._r.bottom())
+        pen = QPen(Qt.white, 0, Qt.DashLine, Qt.FlatCap)
+        painter.setPen(pen)
+        painter.drawLine(p1, p2)
+        painter.drawLine(p3, p4)
 
 
 class CaptureRectOrigin(AbstractToolState):
@@ -75,10 +79,10 @@ class DrawRect(AbstractToolState):
         self.tool._item.setFlag(QGraphicsItem.ItemIsSelectable, False)
         self.tool._item = None
         self.tool._origin = None
-
         self.tool.transition(CaptureRectOrigin())
 
 
+@setCursor(cursor=":/cursor/pencil", hotX=9, hotY=23)
 class DrawBoxTool(AbstractTool):
     def __init__(self, scene: QGraphicsScene = None):
         super().__init__(scene=scene)

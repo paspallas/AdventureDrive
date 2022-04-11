@@ -156,8 +156,12 @@ class SceneView(QGraphicsView):
             super().mouseReleaseEvent(e)
 
     def mouseMoveEvent(self, e: QMouseEvent) -> None:
-        s: QPointF = self.mapToScene(e.pos())
-        StatusBar().bar.showMessage(f"({int(s.x())}, {int(s.y())})")
+        s = self.mapToScene(e.pos())
+
+        if self.background.boundingRect().contains(s.x(), s.y()):
+            StatusBar().bar.showMessage(f"({int(s.x())}, {int(s.y())})")
+        else:
+            StatusBar().bar.showMessage("")
 
         super().mouseMoveEvent(e)
 

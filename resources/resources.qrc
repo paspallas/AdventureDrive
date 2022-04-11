@@ -2,5 +2,12 @@
 <RCC version="1.0">
     <qresource prefix="cursor">
         <file alias="picker">cursors/color-picker.png</file>
+        <file alias="eraser">cursors/eraser.png</file>
+        <file alias="pencil">cursors/pen.png</file>
+    </qresource>
+    <qresource prefix="icon">
+        <file alias="pencil">icons/pencil.png</file>
+        <file alias="selection">icons/selection.png</file>
+        <file alias="eraser">icons/eraser.png</file>
     </qresource>
 </RCC>

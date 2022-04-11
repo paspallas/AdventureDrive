@@ -30,31 +30,25 @@ class SceneModel(QGraphicsScene):
         self._focusedItem: QGraphicsItem = None
         self._currentTool: AbstractTool = None
         self._editableAreaRect: QRectF = None
-
         self._setupUi()
 
     def _setupUi(self):
         self.setBackgroundBrush(QColor("#362F4F"))
 
     def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
-        super().mouseMoveEvent(e)
-
-        if self._currentTool is not None and self._editableAreaRect.contains(
-            e.scenePos()
-        ):
-            self._currentTool.onMouseMove(e)
+        if self._editableAreaRect.contains(e.scenePos()):
+            super().mouseMoveEvent(e)
+            if self._currentTool is not None:
+                self._currentTool.onMouseMove(e)
 
     def mousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
-        super().mousePressEvent(e)
-
-        if self._currentTool is not None and self._editableAreaRect.contains(
-            e.scenePos()
-        ):
-            self._currentTool.onMousePress(e)
+        if self._editableAreaRect.contains(e.scenePos()):
+            super().mousePressEvent(e)
+            if self._currentTool is not None:
+                self._currentTool.onMousePress(e)
 
     def mouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(e)
-
         if self._currentTool is not None:
             self._currentTool.onMouseRelease(e)
 
