@@ -19,6 +19,7 @@ from PyQt5.QtGui import (
     QResizeEvent,
     QPixmap,
     QSurfaceFormat,
+    QCursor,
 )
 from app.ui.statusbar import StatusBar
 from .scenemodel import SceneModel
@@ -43,6 +44,7 @@ class SceneView(QGraphicsView):
 
         self._setupUi()
         self.setMouseTracking(True)
+        self.setAttribute(Qt.WA_Hover)
         self._notifyZoomChange(1)
 
     def _setupUi(self) -> None:

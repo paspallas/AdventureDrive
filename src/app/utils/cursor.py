@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QPixmap
 from functools import wraps, partial
 import app.resources
@@ -21,10 +21,12 @@ def setCursor(cls=None, *, cursor: str, hotX: int = -1, hotY: int = -1):
                 method = self.tool.__getattribute__(name)
 
                 if method.__name__ == "enable":
-                    QApplication.setOverrideCursor(QCursor(QPixmap(cursor), hotX, hotY))
+                    self.tool._scene.views()[0].setCursor(
+                        QCursor(QPixmap(cursor), hotX, hotY)
+                    )
                     return method
                 elif method.__name__ == "disable":
-                    QApplication.restoreOverrideCursor()
+                    self.tool._scene.views()[0].setCursor(QCursor(Qt.ArrowCursor))
                     return method
                 return method
 

@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
     QGraphicsItem,
     QGraphicsPixmapItem,
 )
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QFileInfo, QRectF, QPointF
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QFileInfo, QRectF, QPointF
 from PyQt5.QtGui import QPixmap, QIcon
 from app.object.rectangle import Rectangle
 from app.object.sprite import Sprite
@@ -31,31 +31,38 @@ class SceneEditor(QMainWindow):
         self.setCentralWidget(self._view)
 
     def _setupToolBar(self):
-        self._toolbar = self.addToolBar("tool")
+        toolbar = QToolBar(self)
+        self.addToolBar(Qt.LeftToolBarArea, toolbar)
+        toolbar.setAllowedAreas(Qt.LeftToolBarArea)
+        toolbar.setOrientation(Qt.Vertical)
+        toolbar.setMovable(False)
 
-        self._hotspot = QAction(QIcon(":/icon/pencil"), "Draw Hotspot", self)
-        self._hotspot.setToolTip("Draw a box defining a hotspot")
-        self._hotspot.triggered.connect(lambda: self._scene.setTool("DrawBoxTool"))
-        self._hotspot.setCheckable(True)
+        hotspot = QAction(QIcon(":/icon/pencil"), "Draw Hotspot", self)
+        hotspot.setToolTip("Draw Hotspot (H)")
+        hotspot.triggered.connect(lambda: self._scene.setTool("DrawBoxTool"))
+        hotspot.setCheckable(True)
+        hotspot.setShortcut("H")
 
-        self._edit = QAction(QIcon(":/icon/selection"), "Edit object", self)
-        self._edit.setToolTip("Edit an object")
-        self._edit.triggered.connect(lambda: self._scene.setTool("EditObjectTool"))
-        self._edit.setCheckable(True)
+        edit = QAction(QIcon(":/icon/selection"), "Edit object", self)
+        edit.setToolTip("Edit Object (E)")
+        edit.triggered.connect(lambda: self._scene.setTool("EditObjectTool"))
+        edit.setCheckable(True)
+        edit.setShortcut("E")
 
-        self._delete = QAction(QIcon(":/icon/eraser"), "Delete object", self)
-        self._delete.setToolTip("Delete and object")
-        self._delete.triggered.connect(lambda: self._scene.setTool("DeleteObjectTool"))
-        self._delete.setCheckable(True)
+        delete = QAction(QIcon(":/icon/eraser"), "Delete object", self)
+        delete.setToolTip("Delete Object (D)")
+        delete.triggered.connect(lambda: self._scene.setTool("DeleteObjectTool"))
+        delete.setCheckable(True)
+        delete.setShortcut("D")
 
-        self._toolbar.addAction(self._hotspot)
-        self._toolbar.addAction(self._edit)
-        self._toolbar.addAction(self._delete)
+        toolbar.addAction(hotspot)
+        toolbar.addAction(edit)
+        toolbar.addAction(delete)
 
         group = QActionGroup(self)
-        group.addAction(self._hotspot)
-        group.addAction(self._edit)
-        group.addAction(self._delete)
+        group.addAction(hotspot)
+        group.addAction(edit)
+        group.addAction(delete)
 
     # TODO this implementation lacks robustness
     def setBackgroundImage(self, path: str) -> None:

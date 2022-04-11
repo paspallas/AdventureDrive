@@ -1,8 +1,7 @@
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem, QGraphicsSceneMouseEvent
 from .abstracttool import AbstractTool
-from app.object.rectangle import Rectangle
-from app.object.sprite import Sprite
+from app.object import *
 from app.utils.cursor import setCursor
 
 
@@ -21,9 +20,9 @@ class DeleteObjectTool(AbstractTool):
         pass
 
     def onMousePress(self, e: QGraphicsSceneMouseEvent) -> None:
-        item = self._scene.itemAt(e.scenePos(), self._scene.views()[0].transform())
-        if isinstance(item, (Rectangle, Sprite)):
-            self._scene.removeItem(item)
+        object_ = self._scene.itemAt(e.scenePos(), self._scene.views()[0].transform())
+        if isinstance(object_, (Rectangle, Sprite)):
+            self._scene.removeItem(object_)
 
     def onMouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
         pass

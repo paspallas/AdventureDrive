@@ -108,7 +108,6 @@ class SceneModel(QGraphicsScene):
         if self._currentTool:
             self._currentTool.disable()
             self._currentTool = None
-
         try:
             Tool = getattr(imodule(f"app.tool.{tool}".lower()), tool)
             self._currentTool = Tool(scene=self)
