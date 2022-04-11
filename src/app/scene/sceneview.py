@@ -60,6 +60,7 @@ class SceneView(QGraphicsView):
         self.scene().addItem(self.background)
         self.background.enableGrid()
         self.scene().setFocusedItem(self.background.grid)
+        self.scene().setEditableAreaRect(self.background.boundingRect())
 
         # Add extra space around the scene background. This gives the user a more pleasant
         # navigation experience

@@ -29,6 +29,8 @@ class SceneModel(QGraphicsScene):
 
         self._focusedItem: QGraphicsItem = None
         self._currentTool: AbstractTool = None
+        self._editableAreaRect: QRectF = None
+
         self._setupUi()
 
     def _setupUi(self):
@@ -36,17 +38,24 @@ class SceneModel(QGraphicsScene):
 
     def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         super().mouseMoveEvent(e)
-        if self._currentTool:
+
+        if self._currentTool is not None and self._editableAreaRect.contains(
+            e.scenePos()
+        ):
             self._currentTool.onMouseMove(e)
 
     def mousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(e)
-        if self._currentTool:
+
+        if self._currentTool is not None and self._editableAreaRect.contains(
+            e.scenePos()
+        ):
             self._currentTool.onMousePress(e)
 
     def mouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(e)
-        if self._currentTool:
+
+        if self._currentTool is not None:
             self._currentTool.onMouseRelease(e)
 
     def mouseDoubleClickEvent(self, e: QGraphicsSceneMouseEvent) -> None:
@@ -96,6 +105,9 @@ class SceneModel(QGraphicsScene):
 
     def setFocusedItem(self, item: QGraphicsItem) -> None:
         self._focusedItem = item
+
+    def setEditableAreaRect(self, rect: QRectF) -> None:
+        self._editableAreaRect = rect
 
     @pyqtSlot(str)
     def setTool(self, tool: str) -> None:
