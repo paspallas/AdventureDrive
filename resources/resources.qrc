@@ -9,5 +9,6 @@
         <file alias="pencil">icons/pencil.png</file>
         <file alias="selection">icons/selection.png</file>
         <file alias="eraser">icons/eraser.png</file>
+        <file alias="polygon">icons/polygon.png</file>
     </qresource>
 </RCC>

@@ -5,7 +5,7 @@ from .singleton import Singleton
 
 class SettingsManager(metaclass=Singleton):
     def __init__(self, configFile: str = None):
-        self._configFile = configFile if configFile else "app.ini"
+        self._configFile = configFile or "app.ini"
 
     def read(self, widget: QWidget) -> None:
         settings = QSettings(self._configFile, QSettings.IniFormat)

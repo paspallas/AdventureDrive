@@ -122,7 +122,7 @@ class SceneView(QGraphicsView):
         self._notifyZoomChange(levelOfDetail)
 
     def _notifyZoomChange(self, levelOfDetail: float) -> None:
-        StatusBar().bar.showMessage(f"Zoom { round(levelOfDetail * 100) }%")
+        StatusBar().showMessage(f"Zoom { round(levelOfDetail * 100) }%")
 
     def wheelEvent(self, e: QWheelEvent) -> None:
         if e.modifiers() & Qt.Modifier.CTRL:
@@ -161,9 +161,9 @@ class SceneView(QGraphicsView):
         s = self.mapToScene(e.pos())
 
         if self.background.boundingRect().contains(s.x(), s.y()):
-            StatusBar().bar.showMessage(f"({int(s.x())}, {int(s.y())})")
+            StatusBar().showMessage(f"({int(s.x())}, {int(s.y())})")
         else:
-            StatusBar().bar.showMessage("")
+            StatusBar().showMessage("")
 
         super().mouseMoveEvent(e)
 
@@ -173,7 +173,7 @@ class SceneView(QGraphicsView):
         if rect is not None:
             self.fitInView(rect, Qt.KeepAspectRatio)
         else:
-            self.fitInView(self._background, Qt.KeepAspectRatio)
+            self.fitInView(self.background, Qt.KeepAspectRatio)
 
     @pyqtSlot()
     def resetZoomLevel(self) -> None:

@@ -18,7 +18,7 @@ class Rectangle(QGraphicsRectItem, Serializable):
         self,
         position: QPointF,
         rect: QRectF = None,
-        parent: QWidget = None,
+        parent: QGraphicsItem = None,
     ):
         super().__init__(rect, parent=parent)
 

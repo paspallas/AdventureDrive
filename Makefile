@@ -13,7 +13,7 @@ app:
 
 .PHONY:
 clean:
-	@$(RM) __pycache__ *.ini src/app/resources.py
+	@$(RM) __pycache__ *.ini
 
 .PHONY:
 distclean: clean

@@ -29,6 +29,7 @@ class SceneModel(QGraphicsScene):
 
         self._focusedItem: QGraphicsItem = None
         self._currentTool: AbstractTool = None
+        self._toolname: str = ""
         self._editableAreaRect: QRectF = None
         self._setupUi()
 
@@ -105,12 +106,16 @@ class SceneModel(QGraphicsScene):
 
     @pyqtSlot(str)
     def setTool(self, tool: str) -> None:
-        if self._currentTool:
+        if self._toolname == tool:
+            return
+
+        if self._currentTool is not None:
             self._currentTool.disable()
             self._currentTool = None
         try:
             Tool = getattr(imodule(f"app.tool.{tool}".lower()), tool)
             self._currentTool = Tool(scene=self)
             self._currentTool.enable()
+            self._toolname = tool
         except AttributeError as e:
             print(f"Tool class file not found: {e}")

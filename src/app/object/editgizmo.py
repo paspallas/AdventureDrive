@@ -14,8 +14,8 @@ from .rectangle import Rectangle
 
 class EditGizmo(QGraphicsObject):
 
-    resize = pyqtSignal(QRectF, name="resize")
-    positionChange = pyqtSignal(QPointF, name="positionChange")
+    sigResize = pyqtSignal(QRectF, name="sigResize")
+    sigPositionChange = pyqtSignal(QPointF, name="sigPositionChange")
 
     HANDLE_SIZE = 1.5
 
@@ -48,7 +48,7 @@ class EditGizmo(QGraphicsObject):
         """ Dash line animation """
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._updateDashLineAnimation)
-        self.timer.setInterval(120)
+        self.timer.setInterval(100)
         self.timer.start()
         self.dashOffset = 0.0
 
@@ -57,8 +57,8 @@ class EditGizmo(QGraphicsObject):
         self._updateHandlePositions()
 
         """ Manipulate editable object """
-        self.resize.connect(lambda change: self._editable.resize(change))
-        self.positionChange.connect(lambda change: self._editable.position(change))
+        self.sigResize.connect(lambda change: self._editable.resize(change))
+        self.sigPositionChange.connect(lambda change: self._editable.position(change))
 
         self._cursors = {
             "TopLeft": Qt.SizeFDiagCursor,
@@ -130,7 +130,7 @@ class EditGizmo(QGraphicsObject):
         self._rect = self._adjustRectWarp(handle, self._rect)
 
         self._updateHandlePositions()
-        self.resize.emit(self._rect)
+        self.sigResize.emit(self._rect)
 
     def _updateItemPosition(self, e: QGraphicsSceneMouseEvent) -> None:
         self.prepareGeometryChange()
@@ -140,7 +140,7 @@ class EditGizmo(QGraphicsObject):
         self.update(self._rect)
         self._updateHandlePositions()
 
-        self.positionChange.emit(delta)
+        self.sigPositionChange.emit(delta)
 
     def _boundingRectPointFromHandle(self, handle: str) -> QPointF:
 

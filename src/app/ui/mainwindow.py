@@ -18,6 +18,7 @@ from app.scene.sceneeditor import SceneEditor
 from .statusbar import StatusBar
 from .mdicontainer import MdiContainer
 from .filebrowser import FileBrowser
+from .propertyeditor import PropertyEditor
 
 
 class MainWindow(QMainWindow):
@@ -27,9 +28,11 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self._isZenModeActive = False
+
         self.setWindowTitle("Adventure Drive")
         self._setupUi()
-        self.setStatusBar(StatusBar().bar)
+        self.setStatusBar(StatusBar())
         SettingsManager().read(self)
 
     def _setupUi(self) -> None:
@@ -38,16 +41,10 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self._mdiArea)
 
         self._createMenus()
-        StatusBar().bar.showMessage("Ready", 4000)
+        StatusBar().showMessage("Ready", 4000)
 
-        self._list = QListWidget()
-        self._list.addItem("item 1")
-        self._list.addItem("item 2")
-        self._list.addItem("item 3")
-        self._list.addItem("item 4")
-        self._dock = QDockWidget("Dockable", self)
-        self._dock.setWidget(self._list)
-        self.addDockWidget(Qt.RightDockWidgetArea, self._dock)
+        self._property = PropertyEditor(self)
+        self.addDockWidget(Qt.RightDockWidgetArea, self._property)
 
         # self._filebrowser = FileBrowser(self)
         # self.addDockWidget(Qt.LeftDockWidgetArea, self._filebrowser)
@@ -57,12 +54,39 @@ class MainWindow(QMainWindow):
         menubar = self.menuBar()
         file = menubar.addMenu("&File")
         edit = menubar.addMenu("&Edit")
+        view = menubar.addMenu("&View")
+
+        zenmode = createAction(
+            "&Zen Mode",
+            self._zenmode,
+            shortcut="Tab",
+            tip="Enter Distraction Free Mode",
+            parent=self,
+        )
+
+        # hiden menus don't trigger actions
+        # so this action must be added to the mainwindow itself
+        # to be able to leave zenmode
+        self.addAction(zenmode)
+
+        view.addActions(
+            [
+                zenmode,
+                createAction(
+                    "&Full Screen",
+                    self._fullScreen,
+                    shortcut="F11",
+                    tip="Enter Full Screen Mode",
+                    parent=self,
+                ),
+            ]
+        )
 
         file.addActions(
             [
                 createAction(
                     "&New",
-                    self._new,
+                    lambda: self._new("scene"),
                     shortcut=QKeySequence.New,
                     tip="Create a new scene",
                     parent=self,
@@ -118,18 +142,47 @@ class MainWindow(QMainWindow):
             ]
         )
 
-    def _new(self) -> None:
-        path, file = FileIOControl().openFile("Background Images (*.png)")
+    def _zenmode(self) -> None:
+        if self._isZenModeActive:
+            self._property.show()
+            self.setWindowState(Qt.WindowMaximized)
+            self.menuBar().show()
+            self.statusBar().show()
+
+            self._isZenModeActive = False
+        else:
+            self._property.hide()
+            self.setWindowState(Qt.WindowFullScreen)
+            self.menuBar().hide()
+            self.statusBar().hide()
+
+            self._isZenModeActive = True
+
+    def _fullScreen(self) -> None:
+        if self.windowState() & Qt.WindowMaximized:
+            self.setWindowState(Qt.WindowFullScreen)
+        else:
+            self.setWindowState(Qt.WindowMaximized)
+
+    def _new(self, doctype: str) -> None:
+        if doctype == "scene":
+            filter_ = "Background Images (*.png)"
+        elif doctype == "script":
+            filter_ = "Script Files (*.txt)"
+
+        path, file = FileIOControl().openFile(filter_)
         if path:
-            child = self._mdiArea.createMdiChild()
+            child = self._mdiArea.createMdiChild(doctype)
             child.setWindowTitle("Untitled")
-            child.setBackgroundImage(path)
+
+            if doctype == "scene":
+                child.setBackgroundImage(path)
             child.showMaximized()
 
     def _open(self) -> None:
         path, file = FileIOControl().openFile("Scene Files (*.txt)")
         if path:
-            child = self._mdiArea.createMdiChild()
+            child = self._mdiArea.createMdiChild("scene")
             child.setWindowTitle(file)
             child.deserialize(path)
             child.showMaximized()
@@ -146,8 +199,7 @@ class MainWindow(QMainWindow):
             document.setWindowTitle(file)
 
     def _editScript(self) -> None:
-        child = SceneEditor()
-        self._mdiArea.addSubWindow(child)
+        child = self._mdiArea.createMdiChild("script")
         child.showMaximized()
 
     def closeEvent(self, e: QEvent) -> None:
@@ -157,9 +209,3 @@ class MainWindow(QMainWindow):
         else:
             SettingsManager().write(self)
             e.accept()
-
-    def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
-        if self.isFullScreen():
-            self.setWindowState(Qt.WindowMaximized)
-        else:
-            self.setWindowState(Qt.WindowFullScreen)

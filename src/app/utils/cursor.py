@@ -1,13 +1,24 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QPixmap
 from functools import wraps, partial
+from app.tool.abstracttool import AbstractTool
 import app.resources
 
 
-""" Change the cursor used for a tool for the duration of the class instance """
-
-
 def setCursor(cls=None, *, cursor: str, hotX: int = -1, hotY: int = -1):
+    """Decorator to change the mouse cursor used by a tool.
+    When the tool is disabled the default cursor is restored.
+
+
+    Args:
+        cursor (str): path to the cursor in the qrc resource file
+        cls (_type_, optional): Tool class. Defaults to None.
+        hotX (int, optional): Cursor image hotspot x coordinate. Defaults to -1.
+        hotY (int, optional): Cursor image hotspot y coordinate. Defaults to -1.
+
+    Returns:
+        _type_: The Decorated tool.
+    """
     if not cls:
         return partial(setCursor, cursor=cursor, hotX=hotX, hotY=hotY)
 
@@ -15,7 +26,7 @@ def setCursor(cls=None, *, cursor: str, hotX: int = -1, hotY: int = -1):
     def wrapper(*args, **kwargs):
         class DecoratedTool:
             def __init__(self, *args, **kwargs):
-                self.tool = cls(*args, **kwargs)
+                self.tool: AbstractTool = cls(*args, **kwargs)
 
             def __getattr__(self, name):
                 method = self.tool.__getattribute__(name)

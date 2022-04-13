@@ -13,7 +13,7 @@ from PyQt5.QtGui import QCursor
 
 class FileBrowser(QDockWidget):
     def __init__(self, parent=None):
-        super().__init__("File Browser", parent=parent)
+        super().__init__("Project Browser", parent=parent)
 
         self._setupUi()
         self._populate()

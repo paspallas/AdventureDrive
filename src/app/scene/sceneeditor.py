@@ -42,20 +42,31 @@ class SceneEditor(QMainWindow):
         hotspot.triggered.connect(lambda: self._scene.setTool("DrawBoxTool"))
         hotspot.setCheckable(True)
         hotspot.setShortcut("H")
+        hotspot.setAutoRepeat(False)
+
+        polygon = QAction(QIcon(":/icon/polygon"), "Draw Polygon", self)
+        polygon.setToolTip("Draw Polygon (P)")
+        polygon.triggered.connect(lambda: self._scene.setTool("PolygonTool"))
+        polygon.setCheckable(True)
+        polygon.setShortcut("P")
+        polygon.setAutoRepeat(False)
 
         edit = QAction(QIcon(":/icon/selection"), "Edit object", self)
         edit.setToolTip("Edit Object (E)")
         edit.triggered.connect(lambda: self._scene.setTool("EditObjectTool"))
         edit.setCheckable(True)
         edit.setShortcut("E")
+        edit.setAutoRepeat(False)
 
         delete = QAction(QIcon(":/icon/eraser"), "Delete object", self)
         delete.setToolTip("Delete Object (D)")
         delete.triggered.connect(lambda: self._scene.setTool("DeleteObjectTool"))
         delete.setCheckable(True)
         delete.setShortcut("D")
+        delete.setAutoRepeat(False)
 
         toolbar.addAction(hotspot)
+        toolbar.addAction(polygon)
         toolbar.addAction(edit)
         toolbar.addAction(delete)
 
@@ -63,6 +74,7 @@ class SceneEditor(QMainWindow):
         group.addAction(hotspot)
         group.addAction(edit)
         group.addAction(delete)
+        group.addAction(polygon)
 
     # TODO this implementation lacks robustness
     def setBackgroundImage(self, path: str) -> None:

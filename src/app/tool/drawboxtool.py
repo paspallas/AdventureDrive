@@ -2,13 +2,12 @@ from PyQt5.QtCore import Qt, QPointF, QRectF, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import (
     QGraphicsScene,
     QGraphicsItem,
-    QGraphicsLineItem,
     QGraphicsSceneMouseEvent,
     QWidget,
 )
 from PyQt5.QtGui import QCursor, QPen, QPainter
-from app.object.rectangle import Rectangle
-from app.utils.cursor import setCursor
+from ..object.rectangle import Rectangle
+from ..utils.cursor import setCursor
 from .abstracttool import AbstractTool, AbstractToolState
 
 
