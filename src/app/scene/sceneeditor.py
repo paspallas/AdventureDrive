@@ -19,14 +19,14 @@ import app.resources
 
 
 class SceneEditor(QMainWindow):
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, document, parent: QWidget = None):
         super().__init__(parent)
 
-        self._setupUi()
+        self._setupUi(document)
         self._setupToolBar()
 
-    def _setupUi(self):
-        self._scene: QGraphicsScene = SceneModel()
+    def _setupUi(self, document):
+        self._scene: QGraphicsScene = SceneModel(document)
         self._view: QGraphicsView = SceneView(scene=self._scene, parent=self)
         self.setCentralWidget(self._view)
 
@@ -39,28 +39,36 @@ class SceneEditor(QMainWindow):
 
         hotspot = QAction(QIcon(":/icon/pencil"), "Draw Hotspot", self)
         hotspot.setToolTip("Draw Hotspot (H)")
-        hotspot.triggered.connect(lambda: self._scene.setTool("DrawBoxTool"))
+        hotspot.triggered.connect(
+            lambda checked: self._scene.setTool("DrawBoxTool", checked)
+        )
         hotspot.setCheckable(True)
         hotspot.setShortcut("H")
         hotspot.setAutoRepeat(False)
 
         polygon = QAction(QIcon(":/icon/polygon"), "Draw Polygon", self)
         polygon.setToolTip("Draw Polygon (P)")
-        polygon.triggered.connect(lambda: self._scene.setTool("PolygonTool"))
+        polygon.triggered.connect(
+            lambda checked: self._scene.setTool("PolygonTool", checked)
+        )
         polygon.setCheckable(True)
         polygon.setShortcut("P")
         polygon.setAutoRepeat(False)
 
         edit = QAction(QIcon(":/icon/selection"), "Edit object", self)
         edit.setToolTip("Edit Object (E)")
-        edit.triggered.connect(lambda: self._scene.setTool("EditObjectTool"))
+        edit.triggered.connect(
+            lambda checked: self._scene.setTool("EditObjectTool", checked)
+        )
         edit.setCheckable(True)
         edit.setShortcut("E")
         edit.setAutoRepeat(False)
 
         delete = QAction(QIcon(":/icon/eraser"), "Delete object", self)
         delete.setToolTip("Delete Object (D)")
-        delete.triggered.connect(lambda: self._scene.setTool("DeleteObjectTool"))
+        delete.triggered.connect(
+            lambda checked: self._scene.setTool("DeleteObjectTool", checked)
+        )
         delete.setCheckable(True)
         delete.setShortcut("D")
         delete.setAutoRepeat(False)
@@ -71,6 +79,7 @@ class SceneEditor(QMainWindow):
         toolbar.addAction(delete)
 
         group = QActionGroup(self)
+        group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
         group.addAction(hotspot)
         group.addAction(edit)
         group.addAction(delete)

@@ -17,20 +17,24 @@ from PyQt5.QtWidgets import (
     QGraphicsSceneMouseEvent,
 )
 from PyQt5.QtGui import QPainter, QPen, QColor
-from app.tool.abstracttool import AbstractTool
-from app.object.background import Grid
 from importlib import import_module as imodule
 from typing import Any
+from ..tool.abstracttool import AbstractTool
+from ..object.background import Grid
+from ..model.document import DocumentModel
 
 
 class SceneModel(QGraphicsScene):
-    def __init__(self, parent=None):
+    def __init__(self, document, parent=None):
         super().__init__(parent)
+
+        # The scene document model
+        self.document: DocumentModel = document
 
         self._focusedItem: QGraphicsItem = None
         self._currentTool: AbstractTool = None
-        self._toolname: str = ""
         self._editableAreaRect: QRectF = None
+
         self._setupUi()
 
     def _setupUi(self):
@@ -105,17 +109,21 @@ class SceneModel(QGraphicsScene):
         self._editableAreaRect = rect
 
     @pyqtSlot(str)
-    def setTool(self, tool: str) -> None:
-        if self._toolname == tool:
-            return
-
-        if self._currentTool is not None:
+    def setTool(self, tool: str, checked: bool) -> None:
+        # Disable current tool
+        if self._currentTool is not None and not checked:
             self._currentTool.disable()
             self._currentTool = None
+            return
+
+        # Change current tool
+        if self._currentTool is not None and checked:
+            self._currentTool.disable()
+            self._currentTool = None
+
         try:
             Tool = getattr(imodule(f"app.tool.{tool}".lower()), tool)
             self._currentTool = Tool(scene=self)
             self._currentTool.enable()
-            self._toolname = tool
         except AttributeError as e:
-            print(f"Tool class file not found: {e}")
+            print(f"class attribute not found: {e}")

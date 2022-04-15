@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QRectF, QPointF, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPainter, QPen, QColor, QBrush
 from typing import Any
-from app.utils.serializable import Serializable
+from ..utils.serializable import Serializable
 
 
 class Rectangle(QGraphicsRectItem, Serializable):
@@ -22,6 +22,8 @@ class Rectangle(QGraphicsRectItem, Serializable):
     ):
         super().__init__(rect, parent=parent)
 
+        self._model = None
+
         self.setPos(position)
         flags = (
             QGraphicsItem.ItemIsSelectable
@@ -31,6 +33,13 @@ class Rectangle(QGraphicsRectItem, Serializable):
         )
         self.setFlags(flags)
         self.setAcceptHoverEvents(True)
+
+    def _updateModel(self) -> None:
+        rect = self.mapRectToScene(self.rect())
+        self._model.setPosition(QPointF(rect.x(), rect.y()))
+
+    def setModel(self, model) -> None:
+        self._model = model
 
     def paint(
         self,
@@ -86,9 +95,11 @@ class Rectangle(QGraphicsRectItem, Serializable):
             self.rect().adjusted(change.x(), change.y(), change.x(), change.y())
         )
 
+        self._updateModel()
+
     def serialize(self) -> str:
 
-        """Save all coordinates as integers"""
+        # Save all coordinates as integers
         pos = self.pos().toPoint()
         rect = self.rect().toAlignedRect()
 

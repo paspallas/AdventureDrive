@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtGui import QCursor, QPen, QPainter
 from ..object.rectangle import Rectangle
+from ..model.hotspot import HotSpotModel
+from ..model.document import DocumentModel
 from ..utils.cursor import setCursor
 from .abstracttool import AbstractTool, AbstractToolState
 
@@ -75,6 +77,8 @@ class DrawRect(AbstractToolState):
         pass
 
     def mouseRelease(self, e: QGraphicsSceneMouseEvent) -> None:
+        self.tool._scene.document.addObject(HotSpotModel(), self.tool._item)
+
         self.tool._item.setFlag(QGraphicsItem.ItemIsSelectable, False)
         self.tool._item = None
         self.tool._origin = None

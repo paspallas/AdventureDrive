@@ -10,15 +10,17 @@ from PyQt5.QtWidgets import (
     QSpinBox,
     QDoubleSpinBox,
 )
-from PyQt5.QtCore import Qt, QEvent, QObject, QAbstractItemModel, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import Qt, QEvent, QObject, pyqtSlot, pyqtSignal
+
+__all__ = ["Node", "FloatSpinNode"]
 
 
 class Node(QObject):
-    def __init__(self, property_: str, widget: QWidget = None):
+    def __init__(self, property_: str = None, widget: QWidget = None):
         super().__init__(None)
 
         self._property = property_
-        self.item = QTreeWidgetItem(None, [property_]) if property_ != "root" else None
+        self.item = QTreeWidgetItem(None, [property_]) if property_ else None
         self.widget = widget
 
         self._children = list()
@@ -58,6 +60,43 @@ class Node(QObject):
     def __getitem__(self, index):
         return self._children[index]
 
+    def __setitem__(self, index, item):
+        self._children[index] = item
+
+
+class TextNode(Node):
+    def __init__(self, property_: str):
+        super().__init__(property_, QLineEdit())
+
+
+class FloatSpinNode(Node):
+
+    sigValueChanged = pyqtSignal(float)
+
+    def __init__(self, property_: str):
+        super().__init__(property_, QDoubleSpinBox())
+
+        self.widget.valueChanged.connect(self.sigValueChanged)
+        self.widget.setRange(0, 9999)
+
+    def sltSetValue(self, value: float) -> None:
+        self.widget.setValue(value)
+
+
+class IntSpinNode(Node):
+    def __init__(self, property_: str):
+        super().__init__(property_, QSpinBox())
+
+
+class ButtonNode(Node):
+    def __init__(self, property_: str):
+        super().__init__(property_, QPushButton(property_))
+
+
+class LabelNode(Node):
+    def __init__(self, property_: str):
+        super().__init__(property_, QLabel())
+
 
 class PropertyEditor(QDockWidget):
     def __init__(self, parent: QWidget = None):
@@ -65,40 +104,34 @@ class PropertyEditor(QDockWidget):
 
         self._setupUi()
 
-        # tree structure
-        root = Node("root")
-        root.addChild(Node("Name", QLineEdit()))
-        root[0].addChild(Node("first name", QLineEdit()))
-        root[0][0].addChild(Node("Age", QSpinBox()))
-        root[0][0].addChild(Node("Minor", QSpinBox()))
-        root[0][0][0].addChild(Node("Hair", QLabel("Brown")))
-        root[0][0][1].addChild(Node("Eyes", QLabel("Blue")))
+        # root = Node()
+        # root.addChild(TextNode("Name"))
+        # root.addChild(LabelNode("Position")).addChildren(
+        #     [FloatSpinNode("x"), FloatSpinNode("y")]
+        # )
+        # root.addChild(ButtonNode("Color"))
 
-        root.addChild(Node("Position", QLabel("( , )"))).addChildren(
-            [Node("x", QSpinBox()), Node("y", QSpinBox())]
-        )
-        root.addChild(Node("Color", QPushButton("color")))
+        # self._traverse(root)
 
-        self._traverse(root)
-
-    def setModel(self, tree: Node) -> None:
+    @pyqtSlot(Node)
+    def sltSetModel(self, tree: Node) -> None:
         self._model = tree
         self._traverse(tree)
 
     def _traverse(self, node: Node) -> None:
-        for i, childnode in enumerate(node):
-            self._tree.insertTopLevelItem(i, childnode.item)
-            self._tree.setItemWidget(childnode.item, 1, childnode.widget)
+        for i, childNode in enumerate(node):
+            self._tree.insertTopLevelItem(i, childNode.item)
+            self._tree.setItemWidget(childNode.item, 1, childNode.widget)
 
-            for node in childnode:
-                self._innertraverse(node)
+            for subChildNode in childNode:
+                self._innertraverse(subChildNode)
 
     def _innertraverse(self, node: Node) -> None:
         if node is None:
             return
 
-        for childnode in node:
-            self._innertraverse(childnode)
+        for childNode in node:
+            self._innertraverse(childNode)
 
         self._tree.setItemWidget(node.item, 1, node.widget)
 

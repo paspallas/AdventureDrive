@@ -16,9 +16,9 @@ class MdiContainer(QMdiArea):
         self._windowMapper = QSignalMapper(self)
         self._windowMapper.mapped[QWidget].connect(self._setActiveSubWindow)
 
-    def createMdiChild(self, name: str) -> QWidget:
+    def createMdiChild(self, name: str, document = None) -> QWidget:
         if name == "scene":
-            child = SceneEditor()
+            child = SceneEditor(document)
         elif name == "script":
             child = ScriptEditor()
 

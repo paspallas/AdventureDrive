@@ -45,18 +45,18 @@ class EditGizmo(QGraphicsObject):
         self.setAcceptHoverEvents(True)
         self.setZValue(10000)
 
-        """ Dash line animation """
+        # Dash line animation
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._updateDashLineAnimation)
         self.timer.setInterval(100)
         self.timer.start()
         self.dashOffset = 0.0
 
-        """ Place the resizer gizmo over the editable object"""
+        # Place the resizer gizmo over the editable object
         self.setPos(self._editable.scenePos())
         self._updateHandlePositions()
 
-        """ Manipulate editable object """
+        # Manipulate editable object
         self.sigResize.connect(lambda change: self._editable.resize(change))
         self.sigPositionChange.connect(lambda change: self._editable.position(change))
 
@@ -86,7 +86,7 @@ class EditGizmo(QGraphicsObject):
         s = self.HANDLE_SIZE
         b = self._rect
 
-        """ Center the handles in the corners of the bounding rect """
+        # Center the handles in the corners of the bounding rect
         self._handles["TopLeft"] = QRectF(b.left() - s, b.top() - s, s, s)
         self._handles["Left"] = QRectF(b.left() - s - 0.5, b.center().y() - s / 2, s, s)
         self._handles["BottomLeft"] = QRectF(b.left() - s, b.bottom(), s, s)
@@ -241,7 +241,7 @@ class EditGizmo(QGraphicsObject):
 
     def boundingRect(self) -> QRectF:
 
-        """Adjust the bounding rect so that it contains the handles"""
+        # Adjust the bounding rect so that it contains the handles
 
         o = self.HANDLE_SIZE
         return self._rect.adjusted(-o, -o, o, o)

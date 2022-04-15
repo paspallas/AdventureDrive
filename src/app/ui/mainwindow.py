@@ -19,6 +19,7 @@ from .statusbar import StatusBar
 from .mdicontainer import MdiContainer
 from .filebrowser import FileBrowser
 from .propertyeditor import PropertyEditor
+from ..model.document import DocumentModel
 
 
 class MainWindow(QMainWindow):
@@ -27,6 +28,8 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        self._doc: DocumentModel = None
 
         self._isZenModeActive = False
 
@@ -59,7 +62,7 @@ class MainWindow(QMainWindow):
         zenmode = createAction(
             "&Zen Mode",
             self._zenmode,
-            shortcut="Tab",
+            shortcut="Ctrl+Tab",
             tip="Enter Distraction Free Mode",
             parent=self,
         )
@@ -182,7 +185,10 @@ class MainWindow(QMainWindow):
     def _open(self) -> None:
         path, file = FileIOControl().openFile("Scene Files (*.txt)")
         if path:
-            child = self._mdiArea.createMdiChild("scene")
+            self._doc = DocumentModel()
+            self._doc.sigDocumentChanged.connect(self._property.sltSetModel)
+
+            child: SceneEditor = self._mdiArea.createMdiChild("scene", self._doc)
             child.setWindowTitle(file)
             child.deserialize(path)
             child.showMaximized()

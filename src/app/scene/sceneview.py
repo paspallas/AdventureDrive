@@ -14,20 +14,17 @@ from PyQt5.QtGui import (
     QPainter,
     QMouseEvent,
     QWheelEvent,
-    QHoverEvent,
     QKeyEvent,
     QResizeEvent,
     QPixmap,
     QSurfaceFormat,
     QCursor,
 )
-from app.ui.statusbar import StatusBar
+from ..uitools.pancontroller import PanController
+from ..uitools.zoomcontroller import ZoomController
+from ..ui.statusbar import StatusBar
+from ..object.background import BackGround
 from .scenemodel import SceneModel
-from app.object.background import BackGround
-
-kZoomFactor = 1.2
-kZoomMax = 40
-kZoomMin = 0.5
 
 
 class SceneView(QGraphicsView):
@@ -39,15 +36,10 @@ class SceneView(QGraphicsView):
     ):
         super().__init__(parent)
 
+        PanController(self)
+        ZoomController(self)
+
         self.setScene(scene)
-        self.background = BackGround()
-
-        self._setupUi()
-        self.setMouseTracking(True)
-        self.setAttribute(Qt.WA_Hover)
-        self._notifyZoomChange(1)
-
-    def _setupUi(self) -> None:
         self.setFrameStyle(QFrame.NoFrame)
         self.setContentsMargins(0, 0, 0, 0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -55,7 +47,9 @@ class SceneView(QGraphicsView):
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setCacheMode(QGraphicsView.CacheBackground)
+        self.setMouseTracking(True)
+
+        self.background = BackGround()
 
     def setBackgroundImage(self, pixmap: QPixmap) -> None:
         self.background.setPixmap(pixmap)
@@ -64,7 +58,7 @@ class SceneView(QGraphicsView):
         self.scene().setFocusedItem(self.background.grid)
         self.scene().setEditableAreaRect(self.background.boundingRect())
 
-        # Add extra space around the scene background. This gives the user a more pleasant
+        # Add extra space around the scene background. Give the user a more pleasant
         # navigation experience
 
         extraPx = 480
@@ -74,88 +68,6 @@ class SceneView(QGraphicsView):
 
         self.scene().setSceneRect(rect)
         self.fitInView(self.background, Qt.KeepAspectRatio)
-
-    def _enableViewPortPan(self, e: QMouseEvent) -> None:
-        """by default QGraphicsView uses the left mouse button to perform panning
-         we are going to create a left mouse button press event whenever we press
-        the middle mouse button to fake the desired behaviour
-        """
-
-        # in case left mouse was pressed fake a release event
-        releaseLeftMouseEvent = QMouseEvent(
-            QEvent.MouseButtonRelease,
-            e.localPos(),
-            e.screenPos(),
-            Qt.LeftButton,
-            Qt.NoButton,
-            e.modifiers(),
-        )
-        super().mouseReleaseEvent(releaseLeftMouseEvent)
-        self.setDragMode(QGraphicsView.ScrollHandDrag)
-
-        # now we create the press event to trick QGraphicsView
-        pressLeftMouseEvent = QMouseEvent(
-            e.type(),
-            e.localPos(),
-            e.screenPos(),
-            Qt.LeftButton,
-            e.buttons() | Qt.LeftButton,
-            e.modifiers(),
-        )
-        super().mousePressEvent(pressLeftMouseEvent)
-
-    def _disableViewPortPan(self, e: QMouseEvent) -> None:
-        # fake a left mouse button release event
-        releaseLeftMouseEvent = QMouseEvent(
-            e.type(),
-            e.localPos(),
-            e.screenPos(),
-            Qt.LeftButton,
-            e.buttons() & ~Qt.LeftButton,
-            e.modifiers(),
-        )
-        super().mousePressEvent(releaseLeftMouseEvent)
-        self.setDragMode(QGraphicsView.NoDrag)
-
-    def _setZoom(self, factor: float, levelOfDetail: float) -> None:
-        self.scale(factor, factor)
-        self._notifyZoomChange(levelOfDetail)
-
-    def _notifyZoomChange(self, levelOfDetail: float) -> None:
-        StatusBar().showMessage(f"Zoom { round(levelOfDetail * 100) }%")
-
-    def wheelEvent(self, e: QWheelEvent) -> None:
-        if e.modifiers() & Qt.Modifier.CTRL:
-
-            lod = QStyleOptionGraphicsItem.levelOfDetailFromTransform(self.transform())
-
-            if e.angleDelta().y() > 0:
-                if lod * kZoomFactor < kZoomMax:
-                    self._setZoom(kZoomFactor, lod * kZoomFactor)
-                else:
-                    allowableFactor = kZoomMax / lod
-                    self._setZoom(allowableFactor, kZoomMax)
-
-            elif e.angleDelta().y() < 0:
-                if lod * (1 / kZoomFactor) > kZoomMin:
-                    self._setZoom(1 / kZoomFactor, lod / kZoomFactor)
-                else:
-                    allowableFactor = kZoomMin / lod
-                    self._setZoom(allowableFactor, kZoomMin)
-        else:
-            super().wheelEvent(e)
-
-    def mousePressEvent(self, e: QMouseEvent) -> None:
-        if e.buttons() & Qt.MiddleButton:
-            self._enableViewPortPan(e)
-        else:
-            super().mousePressEvent(e)
-
-    def mouseReleaseEvent(self, e: QMouseEvent) -> None:
-        if e.button() == Qt.MiddleButton:
-            self._disableViewPortPan(e)
-        else:
-            super().mouseReleaseEvent(e)
 
     def mouseMoveEvent(self, e: QMouseEvent) -> None:
         s = self.mapToScene(e.pos())
@@ -174,12 +86,6 @@ class SceneView(QGraphicsView):
             self.fitInView(rect, Qt.KeepAspectRatio)
         else:
             self.fitInView(self.background, Qt.KeepAspectRatio)
-
-    @pyqtSlot()
-    def resetZoomLevel(self) -> None:
-        self.resetTransform()
-        self.update()
-        self._notifyZoomChange(1)
 
     @pyqtSlot()
     def enableOpenGL():
