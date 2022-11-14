@@ -1,8 +1,9 @@
+from functools import partial, wraps
+
+import app.resources
+from app.tool.abstracttool import AbstractTool
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QPixmap
-from functools import wraps, partial
-from app.tool.abstracttool import AbstractTool
-import app.resources
 
 
 def setCursor(cls=None, *, cursor: str, hotX: int = -1, hotY: int = -1):

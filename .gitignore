@@ -1,4 +1,7 @@
+# Editor
 .vscode/
+
+# Artifacts
 __pycache__/
 dist/
 build/

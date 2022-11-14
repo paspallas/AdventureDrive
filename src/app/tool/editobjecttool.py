@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import (
     QGraphicsPixmapItem,
     QGraphicsSceneMouseEvent,
 )
-from app.object.rectangle import Rectangle
-from app.object.editgizmo import EditGizmo
+from ..object.rectangle import Rectangle
+from ..object.editgizmo import EditGizmo
 from .abstracttool import AbstractTool
 
 

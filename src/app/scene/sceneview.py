@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QEvent, QPointF, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QEvent, QPointF, QCoreApplication, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import (
     QWidget,
     QGraphicsView,
@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QGraphicsItem,
     QGraphicsPixmapItem,
     QOpenGLWidget,
+    QGraphicsSceneMouseEvent,
 )
 from PyQt5.QtGui import (
     QPainter,
@@ -30,7 +31,6 @@ from .scenemodel import SceneModel
 class SceneView(QGraphicsView):
     def __init__(
         self,
-        background: QPixmap = None,
         parent: QWidget = None,
         scene: QGraphicsScene = None,
     ):
@@ -45,6 +45,7 @@ class SceneView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.setViewportUpdateMode(QGraphicsView.FullViewportUpdate)
+        self.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setMouseTracking(True)
@@ -55,37 +56,28 @@ class SceneView(QGraphicsView):
         self.background.setPixmap(pixmap)
         self.scene().addItem(self.background)
         self.background.enableGrid()
-        self.scene().setFocusedItem(self.background.grid)
         self.scene().setEditableAreaRect(self.background.boundingRect())
 
         # Add extra space around the scene background. Give the user a more pleasant
         # navigation experience
 
-        extraPx = 480
+        extraPx = 240
         rect = self.background.boundingRect().adjusted(
-            -extraPx, -extraPx / 2, extraPx, extraPx / 2
+            -extraPx, -extraPx, extraPx, extraPx
         )
 
         self.scene().setSceneRect(rect)
         self.fitInView(self.background, Qt.KeepAspectRatio)
 
-    def mouseMoveEvent(self, e: QMouseEvent) -> None:
-        s = self.mapToScene(e.pos())
-
-        if self.background.boundingRect().contains(s.x(), s.y()):
-            StatusBar().showMessage(f"({int(s.x())}, {int(s.y())})")
-        else:
-            StatusBar().showMessage("")
-
-        super().mouseMoveEvent(e)
-
     def resizeEvent(self, e: QResizeEvent) -> None:
-        rect = self.scene().getFocusedItemRect()
+        self.fitInView(self.background, Qt.KeepAspectRatio)
 
-        if rect is not None:
-            self.fitInView(rect, Qt.KeepAspectRatio)
-        else:
-            self.fitInView(self.background, Qt.KeepAspectRatio)
+    #     rect = self.scene().getFocusedItemRect()
+
+    #     if rect is not None:
+    #         self.fitInView(rect, Qt.KeepAspectRatio)
+    #     else:
+    #         self.fitInView(self.background, Qt.KeepAspectRatio)
 
     @pyqtSlot()
     def enableOpenGL():

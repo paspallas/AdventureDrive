@@ -1,6 +1,6 @@
 RM  := rm -rf
 RC  := pyrcc5
-PY 	:= python3.9
+PY 	:= python
 
 .PHONY:
 test:
@@ -9,7 +9,6 @@ test:
 .PHONY:
 app:
 	@pyinstaller main.spec
-#	@makensis installer.nsi
 
 .PHONY:
 clean:

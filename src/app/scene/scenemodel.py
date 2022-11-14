@@ -1,5 +1,6 @@
 from PyQt5.QtCore import (
     Qt,
+    QObject,
     QRectF,
     QLineF,
     QPointF,
@@ -16,46 +17,23 @@ from PyQt5.QtWidgets import (
     QGraphicsSceneHoverEvent,
     QGraphicsSceneMouseEvent,
 )
-from PyQt5.QtGui import QPainter, QPen, QColor
-from importlib import import_module as imodule
+from PyQt5.QtGui import QPainter, QPen, QColor, QKeyEvent
 from typing import Any
-from ..tool.abstracttool import AbstractTool
 from ..object.background import Grid
 from ..model.document import DocumentModel
 
 
 class SceneModel(QGraphicsScene):
-    def __init__(self, document, parent=None):
+    def __init__(self, document: DocumentModel = None, parent: QObject = None):
         super().__init__(parent)
 
         # The scene document model
         self.document: DocumentModel = document
 
         self._focusedItem: QGraphicsItem = None
-        self._currentTool: AbstractTool = None
         self._editableAreaRect: QRectF = None
 
-        self._setupUi()
-
-    def _setupUi(self):
         self.setBackgroundBrush(QColor("#362F4F"))
-
-    def mouseMoveEvent(self, e: QGraphicsSceneMouseEvent) -> None:
-        if self._editableAreaRect.contains(e.scenePos()):
-            super().mouseMoveEvent(e)
-            if self._currentTool is not None:
-                self._currentTool.onMouseMove(e)
-
-    def mousePressEvent(self, e: QGraphicsSceneMouseEvent) -> None:
-        if self._editableAreaRect.contains(e.scenePos()):
-            super().mousePressEvent(e)
-            if self._currentTool is not None:
-                self._currentTool.onMousePress(e)
-
-    def mouseReleaseEvent(self, e: QGraphicsSceneMouseEvent) -> None:
-        super().mouseReleaseEvent(e)
-        if self._currentTool is not None:
-            self._currentTool.onMouseRelease(e)
 
     def mouseDoubleClickEvent(self, e: QGraphicsSceneMouseEvent) -> None:
         super().mouseDoubleClickEvent(e)
@@ -65,12 +43,14 @@ class SceneModel(QGraphicsScene):
             in the viewport.
         """
 
-        view: QGraphicsView = self.views()[0]
-        item: QGraphicsItem = self.itemAt(
-            e.scenePos().x(), e.scenePos().y(), view.transform()
-        )
+        view = self.views()[0]
+        item = self.itemAt(e.scenePos().x(), e.scenePos().y(), view.transform())
+
+        if isinstance(item, Grid):
+            return
 
         if item is not None:
+            # Don't focus an already focused item
             if self._focusedItem != item:
                 self._focusedItem = item
                 self._smoothFocusOnItem(item, view)
@@ -78,8 +58,9 @@ class SceneModel(QGraphicsScene):
     def _smoothFocusOnItem(self, item: QGraphicsItem, view: QGraphicsView) -> None:
         self.animator = QVariantAnimation()
         self.animator.setDuration(800)
-        self.animator.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        self.animator.setEasingCurve(QEasingCurve.Type.InCurve)
         self.animator.setStartValue(
+            # zoom in starting from the current viewport rectangle
             view.mapToScene(view.viewport().rect()).boundingRect()
         )
 
@@ -89,41 +70,35 @@ class SceneModel(QGraphicsScene):
         )
         self.animator.start()
 
+    def _smoothFocusOnSceneRect(self, view: QGraphicsView) -> None:
+        self.anim = QVariantAnimation()
+        self.anim.setDuration(800)
+        self.anim.setEasingCurve(QEasingCurve.Type.OutCurve)
+        # zoom out starting from the current focused item
+        self.anim.setStartValue(
+            self._focusedItem.mapRectToScene(self._focusedItem.boundingRect())
+        )
+        self.anim.setEndValue(self.sceneRect().adjusted(240, 240, -240, -240))
+        self.anim.valueChanged.connect(
+            lambda rect: view.fitInView(rect, Qt.KeepAspectRatio)
+        )
+        self.anim.start()
+
     def getFocusedItemRect(self) -> Any:
-        item = self._focusedItem
-        rect: QRectF = None
-        offset = 15
+        if self._focusedItem is None:
+            return None
 
-        if item is not None:
-            if isinstance(item, Grid):
-                rect = item.boundingRect()
-            else:
-                rect = item.boundingRect().adjusted(-offset, -offset, offset, offset)
-            return item.mapRectToScene(rect)
-        return None
-
-    def setFocusedItem(self, item: QGraphicsItem) -> None:
-        self._focusedItem = item
+        o = 15
+        rect = self._focusedItem.boundingRect().adjusted(-o, -o, o, o)
+        return self._focusedItem.mapRectToScene(rect)
 
     def setEditableAreaRect(self, rect: QRectF) -> None:
         self._editableAreaRect = rect
 
-    @pyqtSlot(str)
-    def setTool(self, tool: str, checked: bool) -> None:
-        # Disable current tool
-        if self._currentTool is not None and not checked:
-            self._currentTool.disable()
-            self._currentTool = None
-            return
+    def keyPressEvent(self, e: QKeyEvent) -> None:
+        super().keyPressEvent(e)
 
-        # Change current tool
-        if self._currentTool is not None and checked:
-            self._currentTool.disable()
-            self._currentTool = None
-
-        try:
-            Tool = getattr(imodule(f"app.tool.{tool}".lower()), tool)
-            self._currentTool = Tool(scene=self)
-            self._currentTool.enable()
-        except AttributeError as e:
-            print(f"class attribute not found: {e}")
+        if e.key() == Qt.Key.Key_R:
+            if self._focusedItem is not None:
+                self._smoothFocusOnSceneRect(self.views()[0])
+                self._focusedItem = None

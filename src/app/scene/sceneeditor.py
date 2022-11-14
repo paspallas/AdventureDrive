@@ -11,8 +11,9 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QFileInfo, QRectF, QPointF
 from PyQt5.QtGui import QPixmap, QIcon
-from app.object.rectangle import Rectangle
-from app.object.sprite import Sprite
+from ..object.rectangle import Rectangle
+from ..object.sprite import Sprite
+from ..tool.toolmanager import ToolManager
 from .sceneview import SceneView
 from .scenemodel import SceneModel
 import app.resources
@@ -22,6 +23,8 @@ class SceneEditor(QMainWindow):
     def __init__(self, document, parent: QWidget = None):
         super().__init__(parent)
 
+        self._toolmanager = None
+
         self._setupUi(document)
         self._setupToolBar()
 
@@ -29,6 +32,7 @@ class SceneEditor(QMainWindow):
         self._scene: QGraphicsScene = SceneModel(document)
         self._view: QGraphicsView = SceneView(scene=self._scene, parent=self)
         self.setCentralWidget(self._view)
+        self._toolmanager = ToolManager(scene=self._scene)
 
     def _setupToolBar(self):
         toolbar = QToolBar(self)
@@ -40,7 +44,7 @@ class SceneEditor(QMainWindow):
         hotspot = QAction(QIcon(":/icon/pencil"), "Draw Hotspot", self)
         hotspot.setToolTip("Draw Hotspot (H)")
         hotspot.triggered.connect(
-            lambda checked: self._scene.setTool("DrawBoxTool", checked)
+            lambda checked: self._toolmanager.setTool("DrawBoxTool", checked)
         )
         hotspot.setCheckable(True)
         hotspot.setShortcut("H")
@@ -49,7 +53,7 @@ class SceneEditor(QMainWindow):
         polygon = QAction(QIcon(":/icon/polygon"), "Draw Polygon", self)
         polygon.setToolTip("Draw Polygon (P)")
         polygon.triggered.connect(
-            lambda checked: self._scene.setTool("PolygonTool", checked)
+            lambda checked: self._toolmanager.setTool("PolygonTool", checked)
         )
         polygon.setCheckable(True)
         polygon.setShortcut("P")
@@ -58,7 +62,7 @@ class SceneEditor(QMainWindow):
         edit = QAction(QIcon(":/icon/selection"), "Edit object", self)
         edit.setToolTip("Edit Object (E)")
         edit.triggered.connect(
-            lambda checked: self._scene.setTool("EditObjectTool", checked)
+            lambda checked: self._toolmanager.setTool("EditObjectTool", checked)
         )
         edit.setCheckable(True)
         edit.setShortcut("E")
@@ -67,7 +71,7 @@ class SceneEditor(QMainWindow):
         delete = QAction(QIcon(":/icon/eraser"), "Delete object", self)
         delete.setToolTip("Delete Object (D)")
         delete.triggered.connect(
-            lambda checked: self._scene.setTool("DeleteObjectTool", checked)
+            lambda checked: self._toolmanager.setTool("DeleteObjectTool", checked)
         )
         delete.setCheckable(True)
         delete.setShortcut("D")
@@ -90,14 +94,14 @@ class SceneEditor(QMainWindow):
         self._backgroundpath = path
         self._view.setBackgroundImage(QPixmap(path))
 
-        self._sprite = Sprite()
-        self._sprite.setPixmap(
-            QPixmap("F:/devel/sega/berlin/AdventureDrive/serpiente.PNG").copy(
-                8, 10, 42, 61
-            )
-        )
-        self._sprite.setPos(10, 10)
-        self._scene.addItem(self._sprite)
+        # self._sprite = Sprite()
+        # self._sprite.setPixmap(
+        #     QPixmap("F:/devel/sega/berlin/AdventureDrive/serpiente.PNG").copy(
+        #         8, 10, 42, 61
+        #     )
+        # )
+        # self._sprite.setPos(10, 10)
+        # self._scene.addItem(self._sprite)
 
     # TODO implement proper per object serialization
     def serialize(self, path: str) -> None:

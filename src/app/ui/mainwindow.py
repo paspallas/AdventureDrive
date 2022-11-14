@@ -10,11 +10,11 @@ from PyQt5.QtWidgets import (
     QListWidget,
 )
 from PyQt5.QtGui import QKeySequence, QMouseEvent
-from app.utils.action import *
-from app.utils.fileio import FileIOControl
-from app.utils.settings import SettingsManager
-from app.script.scripteditor import ScriptEditor
-from app.scene.sceneeditor import SceneEditor
+from ..utils.action import *
+from ..utils.fileio import FileIOControl
+from ..utils.settings import SettingsManager
+from ..script.scripteditor import ScriptEditor
+from ..scene.sceneeditor import SceneEditor
 from .statusbar import StatusBar
 from .mdicontainer import MdiContainer
 from .filebrowser import FileBrowser
@@ -129,19 +129,6 @@ class MainWindow(QMainWindow):
                     tip="Quit the application",
                     parent=self,
                 ),
-            ]
-        )
-
-        edit.addActions(
-            [
-                createAction(
-                    "Reset Zoom",
-                    lambda: self.resetZoomLevel.emit(),
-                    "Ctrl+R",
-                    "Reset scene zoom level",
-                    None,
-                    self,
-                )
             ]
         )
 
